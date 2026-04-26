@@ -155,6 +155,7 @@ public class LoginForm extends JPanel{
 
                 if (username.isBlank() || password.isBlank()) {
                     JOptionPane.showMessageDialog(gameController, "모든 정보를 입력해주세요.");
+                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때
                     return;
                 }
 
@@ -165,13 +166,15 @@ public class LoginForm extends JPanel{
                 if (checkUser != null) {
                     // 로그인 성공
                     JOptionPane.showMessageDialog(gameController, "사용자: " + username + "이 로그인했습니다.");
-                    loginedUser = checkUser;
+                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때
 
+                    loginedUser = checkUser;
                     // 기존 변수 구조 유지: 게임 컨트롤러에 유저 정보 전달
                     gameController.switchToPanel("gameMenu", loginedUser);
                 } else {
                     // 로그인 실패 (DB에 일치하는 정보가 없음)
                     JOptionPane.showMessageDialog(gameController, "아이디 또는 비밀번호가 틀렸습니다.");
+                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때
                 }
             }
         });

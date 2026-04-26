@@ -15,7 +15,6 @@ public class Card extends JButton {
     private int cardWidth = 150;
     private int cardHeight = 210;
 
-    // 각 카드마다 독립적인 사운드 객체를 할당하여 소리가 겹쳐도(뭉개져도) 모두 출력되게 합니다.
     private Sound cardFlip = new Sound();
     private Sound successSound = new Sound();
 
@@ -28,7 +27,6 @@ public class Card extends JButton {
         this.matched = false;
         this.borderColor = null;
 
-        // 초기 상태: 뒷면
         setIcon(resizeImageIcon(BackImagePath, cardWidth, cardHeight));
         setContentAreaFilled(false);
         setFocusPainted(false);
@@ -46,30 +44,17 @@ public class Card extends JButton {
         });
     }
 
-    public int getId() {
-        return number;
-    }
+    public int getId() { return number; }
+    public int getNumber() { return number; }
+    public boolean isMatched() { return matched; }
 
-    public int getNumber() {
-        return number;
-    }
-
-    public boolean isMatched() {
-        return matched;
-    }
-
-    public JButton getButton() {
-        return this;
-    }
-
-    // [유지] 사용자가 클릭 시 호출
+    // [수정] 사용자가 클릭 시 호출 - 소리가 나도록 true 전달
     public void flip() {
         if (matched) return;
-
         if (isRevealed) {
             hide();
         } else {
-            reveal();
+            reveal(true); // 클릭 시에는 소리 재생
         }
     }
 
@@ -80,28 +65,28 @@ public class Card extends JButton {
         }
     }
 
-    /**
-     * 카드를 앞면으로 변경하고 소리를 재생합니다.
-     * 보드 생성 시 반복문에서 이 메서드가 호출되면 의도하신 '촤라라락' 소리가 납니다.
-     */
-    public void reveal() {
+    // [기존 reveal()을 대체] 매개변수에 따라 소리 재생 여부 결정
+    public void reveal(boolean playSound) {
         if (matched) return;
         String cardName = "/" + cardTheme + "card" + checkNum(number) + ".png";
         String imagePath = FrontImagePath + cardName;
         setIcon(resizeImageIcon(imagePath, cardWidth, cardHeight));
 
-        // 사운드 재생: 파일명만 넘깁니다 (Sound.java가 내부에서 경로 조합)
-        // 0은 데시벨 기준이므로 기본 볼륨입니다.
-        cardFlip.play("Card_Flip.wav", false, 0);
+        // playSound가 true일 때만 뒤집기 소리 재생
+        if (playSound) {
+            cardFlip.play("Card_Flip.wav", false, 0);
+        }
 
         isRevealed = true;
         revalidate();
         repaint();
     }
 
-    /**
-     * 카드를 뒷면으로 숨깁니다.
-     */
+    // [오버로딩] 기존 코드가 reveal()을 인자 없이 호출할 경우를 위해 기본값 true 설정
+    public void reveal() {
+        reveal(true);
+    }
+
     public void hide() {
         if (matched) return;
         setIcon(resizeImageIcon(BackImagePath, cardWidth, cardHeight));
@@ -110,17 +95,11 @@ public class Card extends JButton {
         repaint();
     }
 
-    /**
-     * 매칭 성공 시 호출 (성공 사운드 추가)
-     */
     public void match(boolean isUser) {
         this.matched = true;
         this.isRevealed = true;
         this.borderColor = isUser ? new Color(153, 204, 255) : new Color(153, 0, 0);
-
-        // 매칭 성공 사운드 재생
         successSound.play("success_match.wav", false, -5.0f);
-
         setBorderPainted(true);
         setBorder(BorderFactory.createLineBorder(borderColor, 5));
         revalidate();
@@ -142,11 +121,7 @@ public class Card extends JButton {
         ImageIcon icon = (ImageIcon) getIcon();
         if (icon == null) return false;
         Image img = icon.getImage();
-
-        if (x < 0 || y < 0 || x >= img.getWidth(null) || y >= img.getHeight(null)) {
-            return false;
-        }
-
+        if (x < 0 || y < 0 || x >= img.getWidth(null) || y >= img.getHeight(null)) return false;
         BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = bufferedImage.createGraphics();
         g2.drawImage(img, 0, 0, null);
@@ -170,7 +145,6 @@ public class Card extends JButton {
         repaint();
     }
 
-    // 매칭 결과 표시용
     public ImageIcon getMatchedImageIcon() {
         String cardName = "/" + cardTheme + checkNum(number) + ".png";
         String imagePath = FrontImagePath + cardName;

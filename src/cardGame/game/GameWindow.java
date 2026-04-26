@@ -41,65 +41,103 @@ public class GameWindow extends JPanel {
     private JLabel comboLabel; // 이 한 줄이 반드시 필요합니다!
     private JLayeredPane layeredPane; // 화면에 뜰 콤보 라벨
     private int comboCount = 0; // 연속 맞추기 카운트
-    private int userCombo = 0;      // 사용자 연속 성공 횟수
-    private int computerCombo = 0;
     private Timer comboTimer;
     private JPanel userCardPanel;
+    private Sound btnClickSound = new Sound(); // 효과음용 객체 생성
+    private Sound popupClickSound = new Sound();
 
     public GameWindow(GameController gameController, User loginedUser, Board board,
-                      Player computer, Manager recordMgr, int level) { // level 추가
+                      Player computer, Manager recordMgr, int level) {
         this.gameController = gameController;
         this.loginedUser = loginedUser;
         this.board = board;
         this.computer = computer;
         this.recordMgr = recordMgr;
-        this.currentLevel = level; // 받아온 레벨을 클래스 변수에 저장
+        this.currentLevel = level;
 
-        // 초기화 로직들...
-        setupGame();
+        // [수정 포인트]
+        setLayout(new BorderLayout()); // GameWindow 자체의 레이아웃 설정
+        add(setupGame());              // setupGame이 만든 패널을 현재 클래스에 부착
     }
 
     public JPanel setupGame() {
-        // 1. 메인 패널 레이아웃 및 배경 설정
+        // 1. 메인 패널 및 배경 설정
         JPanel mainPanel = new JPanel(new BorderLayout());
         Color themeBgColor = new Color(245, 245, 235);
         mainPanel.setBackground(themeBgColor);
 
-        // 여백 패널 (테두리 효과)
-        mainPanel.add(createBlackPanel(new Dimension(getWidth(), 20)), BorderLayout.SOUTH);
-        mainPanel.add(createBlackPanel(new Dimension(20, getHeight())), BorderLayout.WEST);
-        mainPanel.add(createBlackPanel(new Dimension(20, getHeight())), BorderLayout.EAST);
+        // 여백 설정 (테두리 효과)
+        mainPanel.add(createBlackPanel(new Dimension(getWidth(), 15)), BorderLayout.SOUTH);
+        mainPanel.add(createBlackPanel(new Dimension(15, getHeight())), BorderLayout.WEST);
+        mainPanel.add(createBlackPanel(new Dimension(15, getHeight())), BorderLayout.EAST);
 
         // --- [컴퓨터 영역: 왼쪽] ---
         JPanel computerContainer = new JPanel();
         computerContainer.setLayout(new BoxLayout(computerContainer, BoxLayout.Y_AXIS));
         computerContainer.setBackground(themeBgColor);
         computerContainer.setPreferredSize(new Dimension(220, 1040));
+        computerContainer.setMaximumSize(new Dimension(220, 2000));
 
         JPanel computerNamePanel = new JPanel(new BorderLayout());
         computerNamePanel.setMaximumSize(new Dimension(220, 60));
         computerNamePanel.setBackground(themeBgColor);
 
-        JButton homeButton = createNavButton("/home.png", 40);
+        // 홈 버튼 (확인 창 추가 및 효과음 적용)
+        JButton homeButton = createNavButton("/home.png", 35);
         homeButton.addActionListener(e -> {
-            backBGM.stop();
-            gameController.switchToPanel("gameMenu", loginedUser);
-            loginedUser.resetScore();
+            btnClickSound.play("BtnClick.wav", false, -10.0f);
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "메인 화면으로 나가시겠습니까?",
+                    "나가기 확인", JOptionPane.YES_NO_OPTION);
+
+            popupClickSound.play("click.wav", false, -5.0f);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                // [중요] 모든 사운드 객체를 정지시킵니다.
+                backBGM.stop();      // 배경음 정지
+                btnClickSound.stop(); // 버튼음 정지
+                btnClickSound.stopItemSound(); // 시계 소리 정지
+
+                gameController.switchToPanel("gameMenu", loginedUser);
+            }
         });
 
-        JButton rankingButton = createNavButton("/note.png", 45);
-        rankingButton.addActionListener(e -> {
-            Map<String, List<Integer>> gameRecords = new HashMap<>();
-            JScrollPane scrollPane = getjScrollPane(gameRecords);
-            JOptionPane.showMessageDialog(gameController, scrollPane, "기록 보기", JOptionPane.INFORMATION_MESSAGE);
+        // 리셋 버튼 (확인 창 추가)
+        // [setupGame 메서드 내부의 resetButton 리스너 수정]
+        JButton resetButton = createNavButton("/reset.png", 40);
+        resetButton.addActionListener(e -> {
+            // 버튼 클릭 소리만 여기서 재생
+            btnClickSound.play("BtnClick.wav", false, -10.0f);
+
+            // 리셋 메서드 호출 (확인 창은 메서드 안에서 띄움)
+            resetGame();
         });
 
-        JButton resetButton = createNavButton("/reset.png", 60);
-        resetButton.addActionListener(e -> resetGame());
+        // 음소거 버튼 (반투명 대신 아이콘 교체로 안정화)
+        final boolean[] isMuted = {false};
+        JButton muteButton = createNavButton("/volume_on.png", 40);
+        muteButton.addActionListener(e -> {
+            isMuted[0] = !isMuted[0];
+            if (backBGM != null) {
+                backBGM.setMute(isMuted[0]);
+                try {
+                    String iconPath = isMuted[0] ? "/volume_off.png" : "/volume_on.png";
+                    muteButton.setIcon(new ImageIcon(new ImageIcon(getClass().getResource(FrontImagePath + iconPath))
+                            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
+                } catch (Exception ex) {
+                    muteButton.setText(isMuted[0] ? "OFF" : "ON");
+                }
+            }
+        });
 
+        // 버튼 배치 (기록 버튼 제거)
         computerNamePanel.add(homeButton, BorderLayout.WEST);
-        computerNamePanel.add(rankingButton, BorderLayout.CENTER);
-        computerNamePanel.add(resetButton, BorderLayout.EAST);
+        JPanel rightButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        rightButtonPanel.setOpaque(false);
+        rightButtonPanel.add(muteButton);
+        rightButtonPanel.add(resetButton);
+        computerNamePanel.add(rightButtonPanel, BorderLayout.EAST);
 
         computerPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         computerPanel.setBackground(new Color(147, 191, 133));
@@ -114,41 +152,36 @@ public class GameWindow extends JPanel {
         JPanel boardPanelContainer = new JPanel(new BorderLayout());
         boardPanelContainer.setBackground(themeBgColor);
 
-        // 타이틀 영역
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(themeBgColor);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         JLabel titleLabel = new JLabel();
-        ImageIcon originalIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource(FrontImagePath + "/title.png")));
-        titleLabel.setIcon(new ImageIcon(originalIcon.getImage().getScaledInstance(300, 100, Image.SCALE_SMOOTH)));
+        titleLabel.setIcon(new ImageIcon(new ImageIcon(getClass().getResource(FrontImagePath + "/title.png"))
+                .getImage().getScaledInstance(280, 90, Image.SCALE_SMOOTH)));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-        // 보드 본체 (JLayeredPane을 사용하여 콤보 라벨을 보드 위에 겹침)
         JPanel middlePanel = new JPanel(new BorderLayout());
         middlePanel.setBackground(themeBgColor);
 
-        cardCountLabel = new JLabel("남은 카드: " + board.getCardCnt(), SwingConstants.LEFT);
-        cardCountLabel.setFont(new Font("맑은 고딕", Font.BOLD, 18));
-        cardCountLabel.setForeground(new Color(11, 102, 74));
+        cardCountLabel = new JLabel("남은 카드: " + board.getCardCnt());
+        cardCountLabel.setFont(new Font("맑은 고딕", Font.BOLD, 17));
 
-        // 중앙 팝업용 콤보 라벨 초기화
-        comboLabel = new JLabel("", SwingConstants.CENTER);
+        if (comboLabel == null) comboLabel = new JLabel("", SwingConstants.CENTER);
         comboLabel.setFont(new Font("맑은 고딕", Font.BOLD, 45));
-        comboLabel.setForeground(new Color(255, 69, 0)); // 주황색
+        comboLabel.setForeground(new Color(255, 69, 0));
         comboLabel.setVisible(false);
 
         JPanel boardPanel = board.getBoardContainer();
-        boardPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
+        boardPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
 
-        // 레이어 설정: 보드는 바닥(DEFAULT), 콤보는 위(PALETTE)
-        JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.add(boardPanel, JLayeredPane.DEFAULT_LAYER);
-        layeredPane.add(comboLabel, JLayeredPane.PALETTE_LAYER);
+        // [중요] 멤버 변수 layeredPane에 할당 (지역 변수 선언 제거)
+        this.layeredPane = new JLayeredPane();
+        this.layeredPane.add(boardPanel, JLayeredPane.DEFAULT_LAYER);
+        this.layeredPane.add(comboLabel, JLayeredPane.PALETTE_LAYER);
 
         middlePanel.add(cardCountLabel, BorderLayout.NORTH);
-        middlePanel.add(layeredPane, BorderLayout.CENTER);
+        middlePanel.add(this.layeredPane, BorderLayout.CENTER);
 
         boardPanelContainer.add(titlePanel, BorderLayout.NORTH);
         boardPanelContainer.add(middlePanel, BorderLayout.CENTER);
@@ -158,55 +191,51 @@ public class GameWindow extends JPanel {
         userContainer.setLayout(new BoxLayout(userContainer, BoxLayout.Y_AXIS));
         userContainer.setBackground(themeBgColor);
         userContainer.setPreferredSize(new Dimension(220, 1020));
+        userContainer.setMaximumSize(new Dimension(220, 2000));
 
         JPanel userNamePanel = new JPanel(new BorderLayout());
-        userNamePanel.setMaximumSize(new Dimension(220, 40));
+        userNamePanel.setMaximumSize(new Dimension(220, 45));
         userNamePanel.setBackground(new Color(147, 191, 133));
-
         userScoreLabel = new JLabel("점수: " + loginedUser.getScore(), SwingConstants.CENTER);
         userScoreLabel.setFont(new Font("맑은 고딕", Font.BOLD, 20));
         userNamePanel.add(userScoreLabel, BorderLayout.CENTER);
 
         userPanel = new JPanel(new BorderLayout());
-        userPanel.setBackground(new Color(147, 191, 133));
-
         userCardPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         userCardPanel.setBackground(new Color(147, 191, 133));
         JScrollPane userScroll = new JScrollPane(userCardPanel);
         userScroll.setBorder(null);
 
-        JPanel itemPanel = createItemPanel(); // 하단 보너스 버튼 (1회 제한 로직 포함)
-
         userPanel.add(userScroll, BorderLayout.CENTER);
-        userPanel.add(itemPanel, BorderLayout.SOUTH);
+        userPanel.add(createItemPanel(), BorderLayout.SOUTH);
 
         userContainer.add(userNamePanel);
         userContainer.add(Box.createVerticalStrut(10));
         userContainer.add(userPanel);
 
-        // --- 전체 배치 및 리사이즈 설정 ---
+        // --- 최종 배치 ---
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.X_AXIS));
         centerPanel.setBackground(themeBgColor);
         centerPanel.add(computerContainer);
-        centerPanel.add(Box.createHorizontalStrut(20));
+        centerPanel.add(Box.createHorizontalStrut(20)); // 보드 간격 확보
         centerPanel.add(boardPanelContainer);
         centerPanel.add(Box.createHorizontalStrut(20));
         centerPanel.add(userContainer);
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
+        // 리사이즈 리스너 (Null 방지 및 정확한 크기 계산)
         mainPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                int bw = Math.max(800, mainPanel.getWidth() - 480);
+                int bw = Math.max(750, mainPanel.getWidth() - 500);
                 int bh = mainPanel.getHeight() - 250;
-
-                // 보드판과 콤보 라벨의 크기를 레이어 크기에 맞춤
                 boardPanel.setBounds(0, 0, bw, bh);
                 comboLabel.setBounds(0, 0, bw, bh);
-
-                layeredPane.setPreferredSize(new Dimension(bw, bh));
+                if (layeredPane != null) {
+                    layeredPane.setPreferredSize(new Dimension(bw, bh));
+                }
                 mainPanel.revalidate();
             }
         });
@@ -313,24 +342,35 @@ public class GameWindow extends JPanel {
     }
 
     private void addCardToUserArea(Card card) {
-        JLabel label = new JLabel(card.getMatchedImageIcon());
+        // 이미지 아이콘 가져오기
+        ImageIcon icon = card.getMatchedImageIcon();
+        JLabel label = new JLabel(icon);
+
+        // 핵심: 라벨의 최대 크기를 이미지 크기에 맞게 고정하여 GridLayout이 깨지는 것을 방지
+        label.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
         label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setVerticalAlignment(SwingConstants.CENTER);
 
-        // [수정됨] 형변환 삭제하고 바로 추가
         userCardPanel.add(label);
-
         userCardPanel.revalidate();
         userCardPanel.repaint();
     }
 
     private void addCardToComputerArea(Card card) {
-        JLabel label = new JLabel(card.getMatchedImageIcon());
+        // 1. 매칭된 작은 아이콘 가져오기
+        ImageIcon icon = card.getMatchedImageIcon();
+        JLabel label = new JLabel(icon);
+
+        // 2. 핵심: 라벨의 크기를 이미지 크기만큼만 가지도록 제한 (패널 확장 방지)
+        // 아이콘 크기가 너무 크다면 여기서 직접 Dimension(50, 70) 식으로 고정해도 됩니다.
+        label.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setVerticalAlignment(SwingConstants.CENTER);
 
+        // 3. 패널에 추가
         computerPanel.add(label);
 
+        // 4. 레이아웃 갱신
         computerPanel.revalidate();
         computerPanel.repaint();
     }
@@ -380,18 +420,30 @@ public class GameWindow extends JPanel {
     }
 
     public void setupCardListeners() {
-        board.showAllCard();
+        // 1. 게임 시작 시 모든 카드를 조용히 공개 (false 추가)
+        for (Card card : board.getCards()) {
+            card.reveal(false); // <--- 이 부분에 false를 넣으세요!
+        }
 
+        // 2. 일정 시간(예: 2초) 동안 보여준 후 다시 조용히 숨기기
         Timer timer = new Timer(2000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                board.hideAllCard();
+                for (Card card : board.getCards()) {
+                    if (!card.isMatched()) {
+                        card.flip(); // 뒷면으로 돌리는 건 원래 소리가 안 나거나 짧으므로 그대로 둡니다.
+                    }
+                }
+                board.getBoardContainer().repaint();
             }
         });
         timer.setRepeats(false);
         timer.start();
 
         for (Card card : board.getCards()) {
+            if (!card.isMatched()) {
+                card.reveal(false); // 소리 없이 뒤집기 (false 추가)
+            }
             card.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -424,7 +476,7 @@ public class GameWindow extends JPanel {
 
 
     private void updateUserPanel(){
-        userScoreLabel.setText(" 점수: " + loginedUser.getScore());
+        userScoreLabel.setText("점수: " + loginedUser.getScore());
     }
     private void updateCardCnt(){
         cardCountLabel.setText("남은 카드: " + board.getCardCnt());
@@ -455,67 +507,75 @@ public class GameWindow extends JPanel {
         Card c2 = selectedCards.get(1);
 
         if (c1.getId() == c2.getId()) { // [매칭 성공]
-            // 1. 논리적 상태 즉시 변경
             c1.setMatched(true);
             c2.setMatched(true);
-            isProcessing = false; // ★ 극단적 속도감의 핵심: 즉시 클릭 잠금 해제
+            isProcessing = false;
 
-            // 2. 점수 및 데이터 처리
+            // --- 콤보 로직 통합 (유저/컴퓨터 공통) ---
+            // 매칭 성공 시 updateCombo(true)를 호출하여 comboCount를 올리고 화면에 표시합니다.
+            updateCombo(true);
+            // ---------------------------------------
+
             if (userTurn) {
-                loginedUser.addScore(100);
-                updateCombo(true);
-                // 시각적 효과: 카드가 날아가는 애니메이션은 비동기로 실행됨
+                // 점수 가중치 계산 (통합된 comboCount 사용)
+                int baseScore = 100;
+                int bonus = (comboCount - 1) * 20; // 첫 번째 성공은 100점, 이후부터 가중치
+                int totalIncrease = baseScore + Math.max(0, bonus);
+
+                loginedUser.addScore(totalIncrease);
                 addCardToUserArea(c1);
                 addCardToUserArea(c2);
+                updateUserPanel();
             } else {
-                computer.addScore(100);
+                // 컴퓨터 점수 가중치 (필요 없다면 baseScore만 주셔도 됩니다)
+                int compBaseScore = 100;
+                int compBonus = (comboCount - 1) * 20;
+                computer.addScore(compBaseScore + Math.max(0, compBonus));
+
                 addCardToComputerArea(c1);
                 addCardToComputerArea(c2);
             }
 
-            // 3. 보드 UI에서 즉시 제거 (유저가 다음 카드를 바로 볼 수 있게 함)
             board.removeCard(c1);
             board.removeCard(c2);
             updateCardCnt();
             selectedCards.clear();
 
-            // 4. 화면 갱신 및 종료 체크
             board.getBoardContainer().revalidate();
             board.getBoardContainer().repaint();
             checkGameEnd();
 
-            // 5. 컴퓨터 턴일 경우 딜레이 후 실행
             if (!userTurn && !board.isAllMatched()) {
-                Timer t = new Timer(400, e -> computerTurn()); // 딜레이를 500->400으로 소폭 단축
+                Timer t = new Timer(400, e -> computerTurn());
                 t.setRepeats(false);
                 t.start();
             }
 
         } else { // [매칭 실패]
-            isProcessing = true; // 유저 클릭 방지
+            isProcessing = true;
 
-            // 0.7초 대기 후 카드 다시 뒤집기
-            Timer flipBackTimer = new Timer(300/*AI 1번픽 텀*/, e -> {
+            Timer flipBackTimer = new Timer(300, e -> {
                 c1.flip();
                 c2.flip();
                 selectedCards.clear();
-                userTurn = !userTurn; // 턴 교체
-                updateCombo(false);
+
+                // --- 콤보 초기화 (통합 변수) ---
+                updateCombo(false); // 내부에서 comboCount = 0 처리
+                // ----------------------------
+
+                userTurn = !userTurn;
                 updateStatus();
                 board.getBoardContainer().repaint();
 
-                // ★ 핵심 수정: 카드가 완전히 뒤집힌 후, 즉시 클릭을 푸는 게 아니라
-                // 컴퓨터 턴이라면 '잠시 뒤에' 컴퓨터가 행동하게 만듭니다.
                 if (!userTurn && !board.isAllMatched()) {
-                    // 컴퓨터가 생각하는 시간 (0.8초) 부여
-                    Timer computerThinkingTimer = new Timer(300/*AI 2번픽 텀*/, ev -> {
-                        isProcessing = false; // 이때 풀어주거나, computerTurn 내부에서 관리
+                    Timer computerThinkingTimer = new Timer(300, ev -> {
+                        isProcessing = false;
                         computerTurn();
                     });
                     computerThinkingTimer.setRepeats(false);
                     computerThinkingTimer.start();
                 } else {
-                    isProcessing = false; // 유저 턴으로 돌아오면 즉시 잠금 해제
+                    isProcessing = false;
                 }
             });
             flipBackTimer.setRepeats(false);
@@ -628,7 +688,7 @@ public class GameWindow extends JPanel {
             JOptionPane.showMessageDialog(gameController,
                     "축하합니다! 모든 카드를 맞췄습니다.\n최종 점수: " + finalScore,
                     "게임 종료", JOptionPane.INFORMATION_MESSAGE);
-
+            popupClickSound.play("click.wav", false, -5.0f);
             // 메인 메뉴 패널로 화면 전환 (가장 중요)
             gameController.switchToPanel("gameMenu", loginedUser);
         }
@@ -649,27 +709,60 @@ public class GameWindow extends JPanel {
     private void computerTurn() {
         if (userTurn || board.isAllMatched() || isProcessing) return;
 
-        int[] choices = getComputerChoices();
-        if (choices == null) return;
+        // 1. 기억(knownCards) 속에서 이미 알고 있는 짝이 있는지 먼저 찾기
+        int[] smartChoices = getSmartChoices();
+        int[] finalChoices;
 
-        // 첫 번째 카드 즉시 뒤집기
-        Card card1 = board.getCard(choices[0]);
+        if (smartChoices != null) {
+            // 아는 짝이 있다면 확정 선택
+            finalChoices = smartChoices;
+        } else {
+            // 아는 짝이 없다면 랜덤 선택
+            finalChoices = getComputerChoices();
+        }
+
+        if (finalChoices == null) return;
+
+        // 첫 번째 카드 뒤집기
+        Card card1 = board.getCard(finalChoices[0]);
         if (card1 != null) {
             card1.reveal();
+            rememberCard(card1); // 뒤집은 카드 기억
             selectedCards.add(card1);
         }
 
-        // 두 번째 카드는 0.8초 후 뒤집고 바로 검사
+        // 두 번째 카드 뒤집기 (0.8초 후)
         Timer t2 = new Timer(800, e -> {
-            Card card2 = board.getCard(choices[1]);
+            Card card2 = board.getCard(finalChoices[1]);
             if (card2 != null) {
                 card2.reveal();
+                rememberCard(card2); // 뒤집은 카드 기억
                 selectedCards.add(card2);
-                checkMatch(); // 컴퓨터도 여기서 매칭 검사를 호출함
+                checkMatch();
             }
         });
         t2.setRepeats(false);
         t2.start();
+    }
+
+    private int[] getSmartChoices() {
+        // 저장된 모든 기억 정보를 리스트로 변환
+        List<Integer> keys = new ArrayList<>(knownCards.keySet());
+
+        for (int i = 0; i < keys.size(); i++) {
+            for (int j = i + 1; j < keys.size(); j++) {
+                int idx1 = keys.get(i);
+                int idx2 = keys.get(j);
+
+                // 두 카드의 숫자가 같고, 아직 매칭되지 않은 상태라면
+                if (knownCards.get(idx1).equals(knownCards.get(idx2))) {
+                    if (!board.getCard(idx1).isMatched() && !board.getCard(idx2).isMatched()) {
+                        return new int[]{idx1, idx2};
+                    }
+                }
+            }
+        }
+        return null; // 아는 짝이 없음
     }
 
     private int[] getComputerChoices() {
@@ -697,16 +790,14 @@ public class GameWindow extends JPanel {
     // GameWindow.java 하단에 추가
     // [추가] 카드 정보를 저장하는 메서드
     private void rememberCard(Card card) {
-        if (currentLevel == 1) return; // Lv.1은 기억하지 않음
+        if (currentLevel == 1) return;
 
         int index = board.getCards().indexOf(card);
-        int value = card.getNumber();
+        int value = card.getId(); // getNumber() 대신 getId()로 통일하여 정확도 향상
 
         if (currentLevel == 2) {
-            // Lv.2: 50% 확률로 기억 (난이도 조절)
             if (Math.random() > 0.5) knownCards.put(index, value);
         } else if (currentLevel >= 3) {
-            // Lv.3 이상: 무조건 기억
             knownCards.put(index, value);
         }
     }
@@ -729,37 +820,28 @@ public class GameWindow extends JPanel {
     // 콤보 업데이트 메서드
     private void updateCombo(boolean success) {
         if (success) {
-            comboCount++;
-            if (comboCount >= 1) { // 1콤보부터 바로 표시
-                showComboEffect(comboCount + " COMBO!");
-            }
+            comboCount++; // 통합 카운트 증가
+            showComboEffect(comboCount + " COMBO!"); // 심플하게 표시
         } else {
-            comboCount = 0;
+            comboCount = 0; // 매칭 실패 시 초기화
             if (comboLabel != null) comboLabel.setVisible(false);
         }
     }
     private void showComboEffect(String text) {
         if (comboLabel == null) return;
+        if (comboTimer != null && comboTimer.isRunning()) comboTimer.stop();
 
-        // 1. 이미 실행 중인 콤보 타이머가 있다면 즉시 중단 (시간 초기화 효과)
-        if (comboTimer != null && comboTimer.isRunning()) {
-            comboTimer.stop();
-        }
-
-        // 2. 텍스트 설정 및 보이기
+        // 누가 맞추든 눈에 잘 띄는 색상으로 고정
         comboLabel.setText("<html><div style='text-align: center; color: #FF4500; font-size:20px;'>" + text + "</div></html>");
         comboLabel.setVisible(true);
 
-        // 3. 0.8초 후 자동으로 사라지게 설정 (비동기)
-        comboTimer = new Timer(400/*800*/, e -> comboLabel.setVisible(false));
+        comboTimer = new Timer(400, e -> comboLabel.setVisible(false));
         comboTimer.setRepeats(false);
         comboTimer.start();
-
-        // ★ 주의: 여기서 isProcessing = false를 호출하지 마세요.
-        // 판정 로직(checkMatch)에서 이미 처리할 것입니다.
     }
 
     private void resetGame() {
+        btnClickSound.stopItemSound();
         int confirm = JOptionPane.showConfirmDialog(
                 gameController,
                 "게임을 초기화하시겠습니까?",
@@ -767,27 +849,28 @@ public class GameWindow extends JPanel {
                 JOptionPane.YES_NO_OPTION
         );
 
+        // (예/아니오)에서 어떤 버튼이든 눌렀을 때 소리 재생
+        popupClickSound.play("click.wav", false, -5.0f);
+
         if (confirm == JOptionPane.YES_OPTION) {
-            board.resetBoard(); // 보드 초기화
-            selectedCards.clear(); // 선택된 카드 초기화
-            comboCount = 0; // 콤보 초기화
-            updateCombo(false); // 콤보 라벨 업데이트
-            loginedUser.resetScore(); // 유저 점수 초기화
-            computer.resetScore(); // 컴퓨터 점수 초기화
-            userTurn = true; // 턴 초기화
+            board.resetBoard();
+            selectedCards.clear();
+            comboCount = 0;
+            updateCombo(false);
+            loginedUser.resetScore();
+            computer.resetScore();
+            userTurn = true;
 
             resetPlayerPanels();
-
             resetBonusButtonState();
 
-            // UI 갱신
             updateUserPanel();
             updateCardCnt();
             updateStatus();
             setupCardListeners();
 
-            backBGM.stop(); // 배경음악 중지
-            backBGM.play("Casino.wav", true, -20.0f); // 배경음 재생
+            backBGM.stop();
+            backBGM.play("Casino.wav", true, -20.0f);
 
             JOptionPane.showMessageDialog(
                     gameController,
@@ -795,7 +878,11 @@ public class GameWindow extends JPanel {
                     "초기화 완료",
                     JOptionPane.INFORMATION_MESSAGE
             );
+
+            // 2. 마지막 "초기화 완료" 창의 [확인] 버튼을 눌러서 창이 닫힐 때 소리 재생
+            popupClickSound.play("click.wav", false, -5.0f);
         }
+        knownCards.clear();
     }
 
     //플레이어 패널 초기화 메서드
@@ -823,54 +910,53 @@ public class GameWindow extends JPanel {
         itemButton.repaint();
     }
     // [추가] 보너스 버튼 클릭 시 실행될 아이템 함수
+    // [GameWindow.java 내의 useBonusItem 메서드를 찾아서 아래 내용으로 교체하세요]
+
+    // [GameWindow.java - useBonusItem 메서드 수정]
+    // [GameWindow.java] - 셔플 소리 제거 및 3초 고정 버전
     private void useBonusItem() {
+        // 1. 버튼 클릭 소리 (아이템 사용 시작)
+        btnClickSound.play("BtnClick.wav", false, -10.0f);
+
         if (!userTurn || isProcessing) return;
 
-        // 1회 사용 제한: 버튼을 찾아서 비활성화
+        // 버튼 비활성화 및 UI 처리
         JPanel itemPanel = (JPanel) userPanel.getComponent(1);
         JButton itemButton = (JButton) itemPanel.getComponent(0);
         itemButton.setEnabled(false);
         itemButton.setText("사용 완료");
         itemButton.setBackground(Color.GRAY);
 
-        isProcessing = true; // 효과 도중 클릭 방지
+        isProcessing = true; // 효과 도중 다른 클릭 방지
 
-        // 모든 카드 공개
-        board.showAllCard();
+        // 2. 시계 소리 재생 시작 (3초 타이머와 동기화)
+        btnClickSound.playItemSound("clock_sound.wav", -10.0f);
+
+        // 3. 모든 카드 직접 뒤집기
+        for (Card card : board.getCards()) {
+            if (!card.isMatched()) {
+                card.reveal(false);
+            }
+        }
         board.getBoardContainer().repaint();
 
-        // 1.5초 후 다시 숨기기
-        Timer itemTimer = new Timer(1500, e -> {
-            board.hideAllCard();
+        // 4. 정확히 3초(3000ms) 유지하는 타이머
+        Timer itemTimer = new Timer(3000, e -> {
+            // 모든 카드 다시 숨기기
+            for (Card card : board.getCards()) {
+                if (!card.isMatched()) {
+                    card.flip(); // 카드 뒷면으로 돌리기
+                }
+            }
             board.getBoardContainer().repaint();
-            isProcessing = false;
+
+            // 5. 3초 종료 시 시계 소리 즉시 정지
+            btnClickSound.stopItemSound();
+
+            isProcessing = false; // 잠금 해제
         });
         itemTimer.setRepeats(false);
         itemTimer.start();
     }
-
-    // GameWindow.java 내부에 추가할 메서드
-    private void flipCard(Card card, int index) {
-        // 모든 예외 상황을 입구에서 컷트합니다.
-        if (isProcessing || !userTurn || card.isMatched() || selectedCards.contains(card)) {
-            return;
-        }
-
-        card.reveal();
-        selectedCards.add(card);
-
-        if (selectedCards.size() == 2) {
-            isProcessing = true; // 2장이 뒤집히면 매칭 확인 전까지 클릭 잠금
-            Timer timer = new Timer(700, e -> {
-                checkMatch();
-                // checkMatch 내부 로직(실패 시 지연 시간 등)이 끝날 때까지
-                // isProcessing 해제는 checkMatch의 각 분기점에서 관리합니다.
-            });
-            timer.setRepeats(false);
-            timer.start();
-        }
-    }
-
-
 
 }

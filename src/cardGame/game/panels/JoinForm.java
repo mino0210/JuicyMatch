@@ -210,6 +210,7 @@ public class JoinForm extends JPanel {
 
                 if (isBlank(idTextField, passwordField, nicknameField)) {
                     JOptionPane.showMessageDialog(gameController, "모든 정보를 입력해주세요.");
+                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
                 } else {
                     String nickname = nicknameField.getText().trim();
                     String gender = rbtnMale.isSelected() ? "남성" : (rbtnFemale.isSelected() ? "여성" : "선택안함");
@@ -220,6 +221,7 @@ public class JoinForm extends JPanel {
                     // 1. ID 중복 확인 (DB 연동)
                     if (userDAO.isIdDuplicate(username)) {
                         JOptionPane.showMessageDialog(gameController, "이미 존재하는 Id입니다.");
+                        sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
                         idTextField.requestFocus();
                     } else {
                         // 2. 신규 사용자 생성 및 DB 저장
@@ -228,9 +230,11 @@ public class JoinForm extends JPanel {
 
                         if (isSuccess) {
                             JOptionPane.showMessageDialog(gameController, "회원가입에 성공했습니다.");
+                            sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
                             gameController.switchToPanel("login", loginedUser);
                         } else {
                             JOptionPane.showMessageDialog(gameController, "회원가입 실패: 오류가 발생했습니다.");
+                            sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
                         }
                     }
                 }

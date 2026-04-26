@@ -124,6 +124,7 @@ public class GameMenuPanel extends JPanel {
         logoutBtn.addActionListener(e -> {
             new Sound().play("BtnClick.wav", false, -10.0f); // 로그아웃 버튼도 효과음 추가
             int confirm = JOptionPane.showConfirmDialog(null, "로그아웃 하시겠습니까?", "로그아웃", JOptionPane.YES_NO_OPTION);
+            sound.play("click.wav", false, -5.0f);
             if (confirm == JOptionPane.YES_OPTION) {
                 gameController.logout();
             }
