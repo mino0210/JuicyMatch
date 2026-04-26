@@ -43,6 +43,7 @@ public class GameWindow extends JPanel {
     private JLabel comboLabel; // 이 한 줄이 반드시 필요합니다!
     private JLayeredPane layeredPane; // 화면에 뜰 콤보 라벨
     private int comboCount = 0; // 연속 맞추기 카운트
+    private Timer comboTimer;
     private JPanel userCardPanel;
 
     public GameWindow(GameController gameController, User loginedUser, Board board,
@@ -470,58 +471,68 @@ public class GameWindow extends JPanel {
         Card c1 = selectedCards.get(0);
         Card c2 = selectedCards.get(1);
 
-        if (c1.getId() == c2.getId()) {
-            // [성공 로직]
+        if (c1.getId() == c2.getId()) { // [매칭 성공]
+            // 1. 논리적 상태 즉시 변경
             c1.setMatched(true);
             c2.setMatched(true);
+            isProcessing = false; // ★ 극단적 속도감의 핵심: 즉시 클릭 잠금 해제
 
+            // 2. 점수 및 데이터 처리
             if (userTurn) {
                 loginedUser.addScore(100);
+                updateCombo(true);
+                // 시각적 효과: 카드가 날아가는 애니메이션은 비동기로 실행됨
                 addCardToUserArea(c1);
-                updateUserPanel();
-                updateCombo(true); // 콤보 증가 및 효과 호출
+                addCardToUserArea(c2);
             } else {
                 computer.addScore(100);
                 addCardToComputerArea(c1);
+                addCardToComputerArea(c2);
             }
 
+            // 3. 보드 UI에서 즉시 제거 (유저가 다음 카드를 바로 볼 수 있게 함)
             board.removeCard(c1);
             board.removeCard(c2);
             updateCardCnt();
             selectedCards.clear();
 
-            // ★ 프리징 해결: 성공 시에도 즉시 플래그 해제
-            isProcessing = false;
-
+            // 4. 화면 갱신 및 종료 체크
             board.getBoardContainer().revalidate();
             board.getBoardContainer().repaint();
-
             checkGameEnd();
 
+            // 5. 컴퓨터 턴일 경우 딜레이 후 실행
             if (!userTurn && !board.isAllMatched()) {
-                Timer t = new Timer(200, e -> computerTurn());
+                Timer t = new Timer(400, e -> computerTurn()); // 딜레이를 500->400으로 소폭 단축
                 t.setRepeats(false);
                 t.start();
             }
-        } else {
-            // [실패 로직]
-            isProcessing = true;
-            Timer flipBackTimer = new Timer(200, e -> {
+
+        } else { // [매칭 실패]
+            isProcessing = true; // 유저 클릭 방지
+
+            // 0.7초 대기 후 카드 다시 뒤집기
+            Timer flipBackTimer = new Timer(300/*AI 1번픽 텀*/, e -> {
                 c1.flip();
                 c2.flip();
                 selectedCards.clear();
-                userTurn = !userTurn;
+                userTurn = !userTurn; // 턴 교체
                 updateCombo(false);
                 updateStatus();
-
-                board.getBoardContainer().revalidate();
                 board.getBoardContainer().repaint();
 
-                // ★ 실패 시 타이머 종료 후 플래그 해제
-                isProcessing = false;
-
+                // ★ 핵심 수정: 카드가 완전히 뒤집힌 후, 즉시 클릭을 푸는 게 아니라
+                // 컴퓨터 턴이라면 '잠시 뒤에' 컴퓨터가 행동하게 만듭니다.
                 if (!userTurn && !board.isAllMatched()) {
-                    computerTurn();
+                    // 컴퓨터가 생각하는 시간 (0.8초) 부여
+                    Timer computerThinkingTimer = new Timer(300/*AI 2번픽 텀*/, ev -> {
+                        isProcessing = false; // 이때 풀어주거나, computerTurn 내부에서 관리
+                        computerTurn();
+                    });
+                    computerThinkingTimer.setRepeats(false);
+                    computerThinkingTimer.start();
+                } else {
+                    isProcessing = false; // 유저 턴으로 돌아오면 즉시 잠금 해제
                 }
             });
             flipBackTimer.setRepeats(false);
@@ -747,14 +758,22 @@ public class GameWindow extends JPanel {
     private void showComboEffect(String text) {
         if (comboLabel == null) return;
 
-        // 텍스트 설정 (HTML로 중앙 정렬)
-        comboLabel.setText("<html><div style='text-align: center;'>" + text + "</div></html>");
+        // 1. 이미 실행 중인 콤보 타이머가 있다면 즉시 중단 (시간 초기화 효과)
+        if (comboTimer != null && comboTimer.isRunning()) {
+            comboTimer.stop();
+        }
+
+        // 2. 텍스트 설정 및 보이기
+        comboLabel.setText("<html><div style='text-align: center; color: #FF4500; font-size:20px;'>" + text + "</div></html>");
         comboLabel.setVisible(true);
 
-        // 0.8초 후 사라짐
-        Timer comboTimer = new Timer(800, e -> comboLabel.setVisible(false));
+        // 3. 0.8초 후 자동으로 사라지게 설정 (비동기)
+        comboTimer = new Timer(400/*800*/, e -> comboLabel.setVisible(false));
         comboTimer.setRepeats(false);
         comboTimer.start();
+
+        // ★ 주의: 여기서 isProcessing = false를 호출하지 마세요.
+        // 판정 로직(checkMatch)에서 이미 처리할 것입니다.
     }
 
     private void resetGame() {
