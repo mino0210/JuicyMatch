@@ -1,0 +1,21 @@
+# IDE
+.idea/
+*.iml
+.settings/
+
+# Build
+bin/
+
+# Eclipse
+.project
+.classpath
+
+# DB config
+db.properties
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
