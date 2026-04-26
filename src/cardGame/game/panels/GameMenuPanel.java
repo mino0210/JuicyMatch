@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 
 import static cardGame.game.GameController.*;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
+
 public class GameMenuPanel extends JPanel {
     private JButton startBtn;
     private JButton explanationBtn;
@@ -18,13 +19,13 @@ public class GameMenuPanel extends JPanel {
     private JButton loginBtn;
     private JButton logoutBtn;
     private GameController gameController;
-    private Sound sound = new Sound();
+    private Sound sound = new Sound(); // 효과음용 객체
 
     private final int windowWidth = 1200;
     private final int windowHeight = 1000;
 
     public static User loginedUser;
-    private Sound backBGM = new Sound();
+    private Sound backBGM = new Sound(); // 배경음악용 객체
 
     public GameMenuPanel(GameController gameController, User loginedUser){
         this.gameController = gameController;
@@ -35,22 +36,19 @@ public class GameMenuPanel extends JPanel {
         return loginedUser;
     }
 
-
     public JPanel getPanel(User loginedUser){
         gameController.setDefaultCloseOperation(EXIT_ON_CLOSE); // 창 닫기 동작 설정
 
         this.loginedUser = loginedUser;
-        gameController.setTitle("Menu");
-
         gameController.setTitle("Juicy Match");
+
         JPanel mainPanel = new JPanel(new BorderLayout());
-        BackgroundPanel menuPanel = new BackgroundPanel(FrontImagePath+"/fruitbackground.jpg");
+        BackgroundPanel menuPanel = new BackgroundPanel(FrontImagePath + "/fruitbackground.jpg");
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
 
-        // BGM 재생 중인지 확인 후 재생
+        // 1. 배경음악 재생 (Mainmusic.wav)
         if (!backBGM.isPlaying()) {
-//            backBGM.Sound(SoundPath + "/Mainmusic.wav", true, -25.0f);
-
+            backBGM.play("Mainmusic.wav", true, -25.0f);
         }
 
         CustomLabel gameNameLabel = new CustomLabel(
@@ -60,19 +58,18 @@ public class GameMenuPanel extends JPanel {
                 new Font("Serif", Font.BOLD, 110)
         );
 
-        gameNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // 화면 중앙 정렬
+        gameNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 게임 이름을 메뉴 패널에 추가
-        menuPanel.add(Box.createVerticalStrut(150)); // 제목을 아래로 내리는 여백 추가
+        menuPanel.add(Box.createVerticalStrut(150));
         menuPanel.add(gameNameLabel);
-        menuPanel.add(Box.createVerticalStrut(20));  // 게임 이름과 버튼들 사이에 여백
+        menuPanel.add(Box.createVerticalStrut(20));
 
         JPanel btnPanel = new JPanel();
-        startBtn = initBtn("게임 시작",350,100);
-        explanationBtn = initBtn("설명",350,100);
-        rankingBtn = initBtn("기록",350,100);
-        loginBtn = initBtn("로그인",350,100);
-        logoutBtn = initBtn("로그아웃",350,100);
+        startBtn = initBtn("게임 시작", 350, 100);
+        explanationBtn = initBtn("설명", 350, 100);
+        rankingBtn = initBtn("기록", 350, 100);
+        loginBtn = initBtn("로그인", 350, 100);
+        logoutBtn = initBtn("로그아웃", 350, 100);
 
         btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.Y_AXIS));
         btnPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -89,9 +86,7 @@ public class GameMenuPanel extends JPanel {
             loginBtn.setVisible(false);
         }
 
-
         btnPanel.add(startBtn);
-        //btnPanel.add(Box.createVerticalStrut(20));
         btnPanel.add(loginBtn);
         btnPanel.add(Box.createVerticalStrut(20));
         btnPanel.add(logoutBtn);
@@ -100,67 +95,65 @@ public class GameMenuPanel extends JPanel {
         btnPanel.add(Box.createVerticalStrut(20));
         btnPanel.add(explanationBtn);
 
-        menuPanel.add(Box.createVerticalGlue()); // 버튼 아래에 위치하도록
+        menuPanel.add(Box.createVerticalGlue());
         menuPanel.add(btnPanel);
-        menuPanel.add(Box.createVerticalStrut(170)); //하단 간격
+        menuPanel.add(Box.createVerticalStrut(170));
 
+        // 2. 각 버튼 액션 리스너 설정 (효과음 play() 메서드 호출)
         startBtn.addActionListener(e -> {
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
-            backBGM.Stop_Sound(); // 게임 시작 시 배경음악 종료
+            new Sound().play("BtnClick.wav", false, -10.0f);
+            backBGM.stop(); // 게임 시작 시 배경음악 종료
             gameController.switchToPanel("selectLevel", loginedUser);
         });
-        //startBtn.addActionListener(e-> gameController.switchToPanel("selectLevel",loginedUser));
+
         explanationBtn.addActionListener(e -> {
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+            new Sound().play("BtnClick.wav", false, -10.0f);
             gameController.switchToPanel("explanation", loginedUser);
         });
-        rankingBtn.addActionListener(e-> {
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
-            gameController.switchToPanel("ranking",loginedUser);
 
+        rankingBtn.addActionListener(e -> {
+            new Sound().play("BtnClick.wav", false, -10.0f);
+            gameController.switchToPanel("ranking", loginedUser);
         });
+
         loginBtn.addActionListener(e -> {
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+            new Sound().play("BtnClick.wav", false, -10.0f);
             gameController.switchToPanel("login", loginedUser);
         });
+
         logoutBtn.addActionListener(e -> {
+            new Sound().play("BtnClick.wav", false, -10.0f); // 로그아웃 버튼도 효과음 추가
             int confirm = JOptionPane.showConfirmDialog(null, "로그아웃 하시겠습니까?", "로그아웃", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                // 컨트롤러의 performLogout 하나만 호출
                 gameController.logout();
             }
         });
 
-        // 동적 상태 표시줄 추가
-        String message = loginedUser!=null ? "게임을 시작하려면 [게임 시작] 버튼을 클릭하세요!":"게임을 시작하려면 로그인 후 [게임 시작] 버튼을 클릭하세요!";
+        String message = loginedUser != null ? "게임을 시작하려면 [게임 시작] 버튼을 클릭하세요!" : "게임을 시작하려면 로그인 후 [게임 시작] 버튼을 클릭하세요!";
 
         JLabel statusLabel = createDynamicStatusLabel(message);
-        mainPanel.add(menuPanel, BorderLayout.CENTER); // 메뉴 패널을 중앙에 배치
-        mainPanel.add(statusLabel, BorderLayout.SOUTH); // 상태 표시줄을 하단에 배치
-
+        mainPanel.add(menuPanel, BorderLayout.CENTER);
+        mainPanel.add(statusLabel, BorderLayout.SOUTH);
 
         return mainPanel;
     }
 
     private JLabel createDynamicStatusLabel(String message) {
-
         JLabel statusLabel = new JLabel(message);
         statusLabel.setFont(new Font("맑은 고딕", Font.PLAIN, 24));
         statusLabel.setForeground(new Color(255, 115, 0));
         statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
         statusLabel.setOpaque(false);
-        statusLabel.setBackground(new Color(0, 0, 0, 150));
 
         Timer textTimer = new Timer(100, new ActionListener() {
-            int x = 0; //X 위치를 조정할 변수
-            final int resetPosition = -300; //사라지는 위치
-            final int startPosition = windowWidth; //나타나는 위치
+            int x = 0;
+            final int resetPosition = -300;
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                x += 5; //속도
+                x += 5;
                 if (x > windowWidth) {
-                    x = resetPosition; //다시 왼쪽에서 시작
+                    x = resetPosition;
                 }
                 statusLabel.setLocation(x, statusLabel.getY());
             }
@@ -169,20 +162,15 @@ public class GameMenuPanel extends JPanel {
         return statusLabel;
     }
 
-
     private JButton initBtn(String text, int width, int height) {
         JButton btn = new JButton(text);
-
         btn.setFont(new Font("맑은 고딕", Font.BOLD, 24));
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setMaximumSize(new Dimension(width, height)); //
+        btn.setMaximumSize(new Dimension(width, height));
 
-        btn.setBackground(Color.white); // 배경 색
-        btn.setForeground(Color.black); // 글씨 색
-        //btn.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
+        btn.setBackground(Color.white);
+        btn.setForeground(Color.black);
 
-
-        //마우스 올렸을 때
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btn.setBackground(new Color(255, 232, 204));
@@ -198,17 +186,16 @@ public class GameMenuPanel extends JPanel {
             }
         });
 
-        btn.setBorder(BorderFactory.createLineBorder(new Color(255, 115, 0), 2, true)); // 둥근 테두리
-        btn.setFocusPainted(false); // 포커스 표시 제거
-        btn.setContentAreaFilled(false); // 기본 배경 제거
-        btn.setOpaque(true); // 사용자 정의 배경 활성화
+        btn.setBorder(BorderFactory.createLineBorder(new Color(255, 115, 0), 2, true));
+        btn.setFocusPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(true);
 
         Toolkit toolkit = Toolkit.getDefaultToolkit();
-        Image cursorImage = toolkit.getImage(FrontImagePath+"/fruit/fruit09.png"); // 커서 이미지 경로
+        Image cursorImage = toolkit.getImage(FrontImagePath + "/fruit/fruit09.png");
         Cursor customCursor = toolkit.createCustomCursor(cursorImage, new Point(0, 0), "Custom Cursor");
         btn.setCursor(customCursor);
 
         return btn;
     }
-
 }

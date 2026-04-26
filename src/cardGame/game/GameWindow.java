@@ -37,12 +37,12 @@ public class GameWindow extends JPanel {
     private Sound backBGM = new Sound(); // 배경음악
     private Sound success = new Sound(); // 배경음악
     private JLabel cardCountLabel;
-    private int bonusUsesRemaining; // 남은 보너스 사용 횟수
-    private HashSet<String> computerCombi = new HashSet<>();
     private boolean isProcessing = false; // 카드가 뒤집히는 중인지 확인하는 플래그
     private JLabel comboLabel; // 이 한 줄이 반드시 필요합니다!
     private JLayeredPane layeredPane; // 화면에 뜰 콤보 라벨
     private int comboCount = 0; // 연속 맞추기 카운트
+    private int userCombo = 0;      // 사용자 연속 성공 횟수
+    private int computerCombo = 0;
     private Timer comboTimer;
     private JPanel userCardPanel;
 
@@ -82,7 +82,7 @@ public class GameWindow extends JPanel {
 
         JButton homeButton = createNavButton("/home.png", 40);
         homeButton.addActionListener(e -> {
-            backBGM.Stop_Sound();
+            backBGM.stop();
             gameController.switchToPanel("gameMenu", loginedUser);
             loginedUser.resetScore();
         });
@@ -212,7 +212,7 @@ public class GameWindow extends JPanel {
         });
 
         updateStatus();
-        backBGM.Sound(SoundPath + "/Casino.wav", true, -20.0f);
+        backBGM.play("Casino.wav", true, -20.0f);
 
         return mainPanel;
     }
@@ -356,23 +356,6 @@ public class GameWindow extends JPanel {
         itemPanel.add(itemButton, BorderLayout.CENTER);
         itemPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
         return itemPanel;
-    }
-
-    // 레벨에 따라 보너스 사용 횟수 설정
-    private void setBonusUsesByLevel() {
-        if (rows == 2 && cols == 4) { // 1 레벨
-            bonusUsesRemaining = 1;
-        } else if (rows == 3 && cols == 4) { // 2 레벨
-            bonusUsesRemaining = 2;
-        } else if (rows == 4 && cols == 4) { // 3 레벨
-            bonusUsesRemaining = 3;
-        } else if (rows == 4 && cols == 5) { // 4 레벨
-            bonusUsesRemaining = 4;
-        } else if (rows == 4 && cols == 6) { // 5 레벨
-            bonusUsesRemaining = 5;
-        } else {
-            bonusUsesRemaining = 0; // 기본값
-        }
     }
 
     // 검은 패널 생성 메서드
@@ -546,10 +529,10 @@ public class GameWindow extends JPanel {
 
         if (userTurn) {
             continueSuccess(loginedUser, computer, firstCard);
-            success.Sound(SoundPath + "/success_match.wav", false, -10.0f);
+            success.play("success_match.wav", false, -10.0f);
         } else {
             continueSuccess(computer, loginedUser, firstCard);
-            success.Sound(SoundPath+ "/success_match.wav", false, -10.0f);
+            success.play("success_match.wav", false, -10.0f);
         }
 
         // 보드에서 카드 제거
@@ -633,7 +616,7 @@ public class GameWindow extends JPanel {
 
     private void checkGameEnd() {
         if (board.isAllMatched()) {
-            if (backBGM != null) backBGM.Stop_Sound();
+            if (backBGM != null) backBGM.stop();
 
             int finalScore = loginedUser.getScore();
 
@@ -795,7 +778,6 @@ public class GameWindow extends JPanel {
 
             resetPlayerPanels();
 
-            setBonusUsesByLevel();
             resetBonusButtonState();
 
             // UI 갱신
@@ -804,8 +786,8 @@ public class GameWindow extends JPanel {
             updateStatus();
             setupCardListeners();
 
-            backBGM.Stop_Sound(); // 배경음악 중지
-            backBGM.Sound(SoundPath+"/Casino.wav", true, -20.0f); // 배경음 재생
+            backBGM.stop(); // 배경음악 중지
+            backBGM.play("Casino.wav", true, -20.0f); // 배경음 재생
 
             JOptionPane.showMessageDialog(
                     gameController,

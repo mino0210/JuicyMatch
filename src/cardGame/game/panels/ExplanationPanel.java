@@ -9,7 +9,6 @@ import java.awt.*;
 import java.util.Objects;
 
 import static cardGame.game.GameController.FrontImagePath;
-import static cardGame.game.GameController.SoundPath;
 
 public class ExplanationPanel extends JPanel {
     private GameController gameController;
@@ -92,7 +91,7 @@ public class ExplanationPanel extends JPanel {
         exitButton.setContentAreaFilled(false); // 배경색 제거
         exitButton.setBorderPainted(false);     // 테두리 제거
         exitButton.addActionListener(e ->{
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+            sound.play("BtnClick.wav", false, -10.0f);
             gameController.switchToPanel("gameMenu", loginedUser);
         });
 
@@ -104,7 +103,7 @@ public class ExplanationPanel extends JPanel {
         prevButton.setContentAreaFilled(false); // 배경색 제거
         prevButton.setBorderPainted(false);     // 테두리 제거
         prevButton.addActionListener(e -> {
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+            sound.play("BtnClick.wav", false, -10.0f);
             currentIdx[0] = (currentIdx[0] - 1 + images.length) % images.length;
             destxtLabel.setText("<html>" + destxt[currentIdx[0]] + "</html>");
             imageLabel.setIcon(images[currentIdx[0]]);
@@ -117,7 +116,7 @@ public class ExplanationPanel extends JPanel {
         nextButton.setContentAreaFilled(false); // 배경색 제거
         nextButton.setBorderPainted(false);     // 테두리 제거
         nextButton.addActionListener(e -> {
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+            sound.play("BtnClick.wav", false, -10.0f);
             currentIdx[0] = (currentIdx[0] + 1) % images.length;
             destxtLabel.setText("<html>" + destxt[currentIdx[0]] + "</html>");
             imageLabel.setIcon(images[currentIdx[0]]);

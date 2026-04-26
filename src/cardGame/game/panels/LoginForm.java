@@ -149,7 +149,7 @@ public class LoginForm extends JPanel{
         // 버튼 이벤트 리스너 (수정 버전)
         loginCheckBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+                sound.play("BtnClick.wav", false, -10.0f);
                 String username = userIdField.getText(); // 사용자가 입력한 아이디
                 String password = new String(passwordField.getPassword()); // 사용자가 입력한 비번
 
@@ -177,12 +177,12 @@ public class LoginForm extends JPanel{
         });
 
         backBtn.addActionListener(e ->{
-                    sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+                    sound.play("BtnClick.wav", false, -10.0f);
                     gameController.switchToPanel("gameMenu",loginedUser);
                 });
 
         joinBtn.addActionListener(e -> {
-                    sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+                    sound.play("BtnClick.wav", false, -10.0f);
                     gameController.switchToPanel("join",loginedUser);
                 }
         );

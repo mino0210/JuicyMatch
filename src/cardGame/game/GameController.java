@@ -21,11 +21,8 @@ public class GameController extends JFrame {
     private User loginedUser;
 
     public static final String FrontImagePath = "/cardGame/img";
-    public static final String ResourcePath = "cardGame/resource";
-    public static final String SoundPath = "cardGame/sound";
 
     public static final String BackImagePath = FrontImagePath + "/card_back.png";
-    public static final String CardSoundPath = SoundPath + "/Card_Flip.wav";
     public static final String MenuScreenPath = FrontImagePath + "/fruitbackground.jpg";
 
     public static int rows;

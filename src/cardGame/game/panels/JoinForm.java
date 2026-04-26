@@ -204,7 +204,7 @@ public class JoinForm extends JPanel {
         joinBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+                sound.play("BtnClick.wav", false, -10.0f);
                 String username = idTextField.getText();
                 char[] password = passwordField.getPassword();
 
@@ -238,7 +238,7 @@ public class JoinForm extends JPanel {
         });
 
         cancelBtn.addActionListener(e ->{
-            sound.Sound(SoundPath +"/BtnClick.wav", false, -10.0f);
+            sound.play("BtnClick.wav", false, -10.0f);
             gameController.switchToPanel("login",loginedUser);
         } );
 

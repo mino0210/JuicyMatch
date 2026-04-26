@@ -16,8 +16,6 @@ import java.util.Map;      // 추가됨
 import java.util.HashMap;  // 추가됨
 import java.util.ArrayList; // 추가됨
 
-import static cardGame.game.GameController.SoundPath;
-
 public class RankingPanel extends JPanel {
     private GameController gameController;
     private User loginedUser;
@@ -60,7 +58,7 @@ public class RankingPanel extends JPanel {
         JButton backButton = new JButton("Back");
         backButton.setFont(new Font("맑은 고딕", Font.BOLD, 20));
         backButton.addActionListener(e -> {
-            sound.Sound(SoundPath + "/BtnClick.wav", false, -10.0f);
+            sound.play("BtnClick.wav", false, -10.0f);
             gameController.switchToPanel("gameMenu", loginedUser);
         });
         mainPanel.add(backButton, BorderLayout.SOUTH);
