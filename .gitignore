@@ -2,6 +2,7 @@
 .idea/
 *.iml
 .settings/
+classes/
 
 # Build
 bin/
@@ -11,11 +12,11 @@ bin/
 .classpath
 
 # DB config
-db.properties
+src/db.properties
 
 # Logs
 *.log
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.dbsrc/db.properties 
