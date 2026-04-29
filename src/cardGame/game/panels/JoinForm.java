@@ -4,252 +4,328 @@ import cardGame.database.UserDAO;
 import cardGame.entity.User;
 import cardGame.game.GameController;
 import cardGame.game.Sound;
-import cardGame.mgr.Manageable;
+import cardGame.game.components.WoodButton;
+import cardGame.game.components.ImagePanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Objects;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 
-import static cardGame.game.GameController.*;
-
+/**
+ * 회원가입 화면 - 이미지 기반 UI / Join screen - Image-based UI
+ * User 클래스 필드: username(ID), password(PW), nickname(별명), gender(성별)
+ */
 public class JoinForm extends JPanel {
-    private UserDAO userDAO = new UserDAO();
-    private GameController gameController;
-    private JRadioButton rbtnMale;
-    private JRadioButton rbtnFemale;
-    private JTextField tfId;
-    private JPasswordField tfPw;
-    private JPasswordField tfRe;
-    private JTextField tfUserName;
     private User loginedUser;
+    private GameController gameController;
+    private BufferedImage panelImage;
+    private BufferedImage inputFieldImage;
+
     private Sound sound = new Sound();
+
+    // 화면 기준값
+    // =========================
+    // =========================
+    private static final int SCREEN_W = 1920;
+    private static final int SCREEN_H = 1080;
+
+    // 회원가입 패널 크기/위치
+    // =========================
+    // =========================
+    private static final int JOIN_PANEL_W = 800;
+    private static final int JOIN_PANEL_H = 600;
+
+    private static final int JOIN_PANEL_Y = 240;
+    private static final int JOIN_PANEL_X = (SCREEN_W - JOIN_PANEL_W) / 2;
+
+    // 입력 영역 위치 조정값
+    // =========================
+    // =========================
+    private static final int INPUT_GROUP_SHIFT_Y = 15;
+    private static final int INPUT_GROUP_SHIFT_X = 0;
+
+    // 버튼 위치 조정값
+    // =========================
+    // =========================
+    private static final int BUTTON_GROUP_SHIFT_Y = 0;
+    private static final int BUTTON_GROUP_SHIFT_X = 0;
+
+    // 입력 필드 내부 텍스트 시작 위치 조정값
+    // =========================
+    // =========================
+    /*
+     * 입력한 글자가 입력란보다 왼쪽에서 시작하면 이 값을 키우세요.
+     * Increase this value if entered text starts to the left of the input field.
+     *
+     * 35 = 조금 오른쪽
+     * 35 = slightly right
+     * 45 = 추천값
+     * 45 = recommended value
+     * 55 = 더 오른쪽
+     * 55 = more to the right
+     */
+    private static final int FIELD_TEXT_PADDING_TOP = 5;
+    private static final int FIELD_TEXT_PADDING_LEFT = 30;
+    private static final int FIELD_TEXT_PADDING_BOTTOM = 5;
+    private static final int FIELD_TEXT_PADDING_RIGHT = 15;
 
     public JoinForm(GameController gameController) {
         this.gameController = gameController;
+        loadImages();
     }
 
-    private boolean isBlank(JTextField idTextField, JPasswordField passwordField, JTextField nicknameField) {
-        if (idTextField.getText().isEmpty())
-            return true;
-        if (String.valueOf(passwordField.getPassword()).isEmpty())
-            return true;
-        return nicknameField.getText().isEmpty();
-    }
-
-    private boolean checkKwd(String username) {
-        User user;
-        for (Manageable m : userMgr.mList) {
-            user = (User) m;
-            if (user.matches(username))
-                return true;
+    private void loadImages() {
+        try {
+            panelImage = ImageIO.read(new File("src/cardGame/img/join_panel.png"));
+            inputFieldImage = ImageIO.read(new File("src/cardGame/img/input_field.png"));
+        } catch (IOException e) {
+            System.err.println("회원가입 패널 이미지 로드 실패: " + e.getMessage());
         }
-        return false;
     }
 
     public JPanel showJoin() {
-        // 이미지 삽입을 위한 패널 정의
-        JPanel panel = new JPanel() {
-            private Image backgroundImage;
+        gameController.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            {
-                try {
-                    backgroundImage = new ImageIcon(Objects.requireNonNull
-                            (getClass().getResource(FrontImagePath + "/login_img/loginBackground.png"))).getImage();
+        ImagePanel panel = new ImagePanel("src/cardGame/img/background.png");
+        panel.setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
+        panel.setLayout(null);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
+        JPanel joinPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                if (backgroundImage != null) {
-                    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+
+                if (panelImage != null) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC
+                    );
+                    g2.drawImage(panelImage, 0, 0, getWidth(), getHeight(), null);
                 }
             }
         };
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.anchor = GridBagConstraints.CENTER;
 
-        panel.setPreferredSize(new Dimension(600, 400));
+        joinPanel.setOpaque(false);
+        joinPanel.setLayout(null);
+        joinPanel.setBounds(JOIN_PANEL_X, JOIN_PANEL_Y, JOIN_PANEL_W, JOIN_PANEL_H);
+        panel.add(joinPanel);
 
-        JLabel joinLabel = new JLabel("회원가입");
-        joinLabel.setFont(new Font("맑은 고딕", Font.BOLD, 45));
-        joinLabel.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        panel.add(joinLabel, gbc);
+        Font labelFont = createFont(20, Font.BOLD);
+        Font fieldFont = createFont(18, Font.BOLD);
+        Color labelColor = new Color(255, 250, 240);
 
-        JLabel lblId = new JLabel("아이디");
-        lblId.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        lblId.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(10, 0, 10, 10);
-        panel.add(lblId, gbc);
+        // 입력 영역 기본 좌표
+        // =========================
+        // =========================
+        int labelX = 160 + INPUT_GROUP_SHIFT_X;
+        int fieldX = 300 + INPUT_GROUP_SHIFT_X;
 
-        JTextField idTextField = new JTextField();
-        idTextField.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
-        idTextField.setPreferredSize(new Dimension(250, 40));
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel.add(idTextField, gbc);
+        int labelW = 180;
+        int labelH = 30;
 
-        JLabel lblPw = new JLabel("비밀번호");
-        lblPw.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        lblPw.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(10, 0, 10, 10);
-        panel.add(lblPw, gbc);
+        int fieldW = 380;
+        int fieldH = 40;
 
-        JPasswordField passwordField = new JPasswordField();
-        passwordField.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
-        passwordField.setPreferredSize(new Dimension(250, 40));
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel.add(passwordField, gbc);
+        int userIdY = 130 + INPUT_GROUP_SHIFT_Y;
+        int passwordY = 200 + INPUT_GROUP_SHIFT_Y;
+        int nicknameY = 270 + INPUT_GROUP_SHIFT_Y;
+        int genderY = 340 + INPUT_GROUP_SHIFT_Y;
 
-        JLabel lblUserName = new JLabel("닉네임");
-        lblUserName.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        lblUserName.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(10, 0, 10, 10);
-        panel.add(lblUserName, gbc);
+        JLabel idLabel = new JLabel("ユーザーID");
+        idLabel.setFont(labelFont);
+        idLabel.setForeground(labelColor);
+        idLabel.setBounds(labelX, userIdY, labelW, labelH);
+        joinPanel.add(idLabel);
 
-        JTextField nicknameField = new JTextField();
-        nicknameField.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
-        nicknameField.setPreferredSize(new Dimension(250, 40));
-        gbc.gridx = 1;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel.add(nicknameField, gbc);
+        JTextField userIdField = createStyledTextField();
+        userIdField.setFont(fieldFont);
+        userIdField.setBounds(fieldX, userIdY, fieldW, fieldH);
+        joinPanel.add(userIdField);
 
-        JLabel lblGender = new JLabel("              ");
-        lblGender.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        lblGender.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.EAST;
-        panel.add(lblGender, gbc);
+        JLabel passwordLabel = new JLabel("パスワード");
+        passwordLabel.setFont(labelFont);
+        passwordLabel.setForeground(labelColor);
+        passwordLabel.setBounds(labelX, passwordY, labelW, labelH);
+        joinPanel.add(passwordLabel);
 
-        rbtnMale = new JRadioButton("남성");
-        rbtnMale.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
-        rbtnMale.setForeground(Color.WHITE);
-        rbtnMale.setOpaque(false);
+        JPasswordField passwordField = createStyledPasswordField();
+        passwordField.setFont(fieldFont);
+        passwordField.setBounds(fieldX, passwordY, fieldW, fieldH);
+        joinPanel.add(passwordField);
 
-        rbtnFemale = new JRadioButton("여성");
-        rbtnFemale.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
-        rbtnFemale.setForeground(Color.WHITE);
-        rbtnFemale.setOpaque(false);
+        JLabel nicknameLabel = new JLabel("ニックネーム");
+        nicknameLabel.setFont(labelFont);
+        nicknameLabel.setForeground(labelColor);
+        nicknameLabel.setBounds(labelX, nicknameY, labelW, labelH);
+        joinPanel.add(nicknameLabel);
+
+        JTextField nicknameField = createStyledTextField();
+        nicknameField.setFont(fieldFont);
+        nicknameField.setBounds(fieldX, nicknameY, fieldW, fieldH);
+        joinPanel.add(nicknameField);
+
+        JLabel genderLabel = new JLabel("性別");
+        genderLabel.setFont(labelFont);
+        genderLabel.setForeground(labelColor);
+        genderLabel.setBounds(labelX, genderY, labelW, labelH);
+        joinPanel.add(genderLabel);
+
+        JRadioButton maleRadio = new JRadioButton("男性");
+        maleRadio.setFont(fieldFont);
+        maleRadio.setForeground(labelColor);
+        maleRadio.setOpaque(false);
+        maleRadio.setBounds(fieldX + 10, genderY, 100, 30);
+        maleRadio.setSelected(true);
+        joinPanel.add(maleRadio);
+
+        JRadioButton femaleRadio = new JRadioButton("女性");
+        femaleRadio.setFont(fieldFont);
+        femaleRadio.setForeground(labelColor);
+        femaleRadio.setOpaque(false);
+        femaleRadio.setBounds(fieldX + 130, genderY, 100, 30);
+        joinPanel.add(femaleRadio);
 
         ButtonGroup genderGroup = new ButtonGroup();
-        genderGroup.add(rbtnMale);
-        genderGroup.add(rbtnFemale);
+        genderGroup.add(maleRadio);
+        genderGroup.add(femaleRadio);
 
-        JPanel genderPanel = new JPanel();
-        genderPanel.setOpaque(false);
-        genderPanel.add(rbtnMale);
-        genderPanel.add(rbtnFemale);
+        int backBtnX = 180 + BUTTON_GROUP_SHIFT_X;
+        int registerBtnX = 420 + BUTTON_GROUP_SHIFT_X;
+        int buttonY = 460 + BUTTON_GROUP_SHIFT_Y;
 
-        gbc.gridx = 1;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel.add(genderPanel, gbc);
+        WoodButton backBtn = new WoodButton("戻る");
+        backBtn.setBounds(backBtnX, buttonY, 200, 70);
+        joinPanel.add(backBtn);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setOpaque(false);
-        buttonPanel.setLayout(new GridBagLayout());
+        WoodButton registerBtn = new WoodButton("登録");
+        registerBtn.setBounds(registerBtnX, buttonY, 200, 70);
+        joinPanel.add(registerBtn);
 
-        JButton cancelBtn = new JButton("돌아가기");
-        cancelBtn.setFont(new Font("맑은 고딕", Font.BOLD, 18));
-        cancelBtn.setFocusPainted(false);
-        cancelBtn.setBorderPainted(false);
+        registerBtn.addActionListener(e -> {
+            sound.play("BtnClick.wav", false, -10.0f);
 
-        GridBagConstraints gbcCancel = new GridBagConstraints();
-        gbcCancel.gridx = 0;
-        gbcCancel.gridy = 0;
-        gbcCancel.insets = new Insets(0, 0, 0, 160);
-        buttonPanel.add(cancelBtn, gbcCancel);
+            String userId = userIdField.getText().trim();
+            String password = new String(passwordField.getPassword());
+            String nickname = nicknameField.getText().trim();
+            String gender = maleRadio.isSelected() ? "M" : "F";
 
-        JButton joinBtn = new JButton("가입하기");
-        joinBtn.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        joinBtn.setForeground(Color.WHITE);
-        joinBtn.setBackground(new Color(30, 200, 100));
-        GridBagConstraints gbcJoin = new GridBagConstraints();
-        gbcJoin.gridx = 1;
-        gbcJoin.gridy = 0;
-        gbcJoin.insets = new Insets(0, 10, 0, 0);
-        buttonPanel.add(joinBtn, gbcJoin);
+            if (userId.isBlank() || password.isBlank() || nickname.isBlank()) {
+                JOptionPane.showMessageDialog(gameController, "すべての情報を入力してください。");
+                sound.play("click.wav", false, -5.0f);
+                return;
+            }
 
-        GridBagConstraints gbcButtonPanel = new GridBagConstraints();
-        gbcButtonPanel.gridx = 0;
-        gbcButtonPanel.gridy = 5;
-        gbcButtonPanel.gridwidth = 2;
-        panel.add(buttonPanel, gbcButtonPanel);
+            UserDAO userDAO = new UserDAO();
 
-        joinBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                sound.play("BtnClick.wav", false, -10.0f);
-                String username = idTextField.getText();
-                char[] password = passwordField.getPassword();
+            if (userDAO.isIdDuplicate(userId)) {
+                JOptionPane.showMessageDialog(gameController, "既に存在するIDです。");
+                sound.play("click.wav", false, -5.0f);
+                return;
+            }
 
-                if (isBlank(idTextField, passwordField, nicknameField)) {
-                    JOptionPane.showMessageDialog(gameController, "모든 정보를 입력해주세요.");
-                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
-                } else {
-                    String nickname = nicknameField.getText().trim();
-                    String gender = rbtnMale.isSelected() ? "남성" : (rbtnFemale.isSelected() ? "여성" : "선택안함");
+            User newUser = new User(userId, password, nickname, gender);
+            boolean success = userDAO.insertUser(newUser);
 
-                    // DB 도구 선언
-                    cardGame.database.UserDAO userDAO = new cardGame.database.UserDAO();
-
-                    // 1. ID 중복 확인 (DB 연동)
-                    if (userDAO.isIdDuplicate(username)) {
-                        JOptionPane.showMessageDialog(gameController, "이미 존재하는 Id입니다.");
-                        sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
-                        idTextField.requestFocus();
-                    } else {
-                        // 2. 신규 사용자 생성 및 DB 저장
-                        User newUser = new User(username, String.valueOf(password), nickname, gender);
-                        boolean isSuccess = userDAO.insertUser(newUser);
-
-                        if (isSuccess) {
-                            JOptionPane.showMessageDialog(gameController, "회원가입에 성공했습니다.");
-                            sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
-                            gameController.switchToPanel("login", loginedUser);
-                        } else {
-                            JOptionPane.showMessageDialog(gameController, "회원가입 실패: 오류가 발생했습니다.");
-                            sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때 추가
-                        }
-                    }
-                }
+            if (success) {
+                JOptionPane.showMessageDialog(gameController, "登録が完了しました。");
+                sound.play("click.wav", false, -5.0f);
+                gameController.switchToPanel("login", null);
+            } else {
+                JOptionPane.showMessageDialog(gameController, "登録に失敗しました。");
+                sound.play("click.wav", false, -5.0f);
             }
         });
 
-        cancelBtn.addActionListener(e ->{
+        backBtn.addActionListener(e -> {
             sound.play("BtnClick.wav", false, -10.0f);
-            gameController.switchToPanel("login",loginedUser);
-        } );
+            gameController.switchToPanel("login", loginedUser);
+        });
 
         return panel;
     }
 
-    public String getGender() {
-        return rbtnMale.isSelected() ? rbtnMale.getText() : rbtnFemale.getText();
+    private JTextField createStyledTextField() {
+        JTextField field = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (inputFieldImage != null) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC
+                    );
+                    g2.drawImage(inputFieldImage, 0, 0, getWidth(), getHeight(), null);
+                }
+
+                super.paintComponent(g);
+            }
+        };
+
+        applyInputFieldStyle(field);
+        return field;
+    }
+
+    private JPasswordField createStyledPasswordField() {
+        JPasswordField field = new JPasswordField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (inputFieldImage != null) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC
+                    );
+                    g2.drawImage(inputFieldImage, 0, 0, getWidth(), getHeight(), null);
+                }
+
+                super.paintComponent(g);
+            }
+        };
+
+        applyInputFieldStyle(field);
+        return field;
+    }
+
+    private void applyInputFieldStyle(JTextField field) {
+        field.setOpaque(false);
+
+        field.setBorder(BorderFactory.createEmptyBorder(
+                FIELD_TEXT_PADDING_TOP,
+                FIELD_TEXT_PADDING_LEFT,
+                FIELD_TEXT_PADDING_BOTTOM,
+                FIELD_TEXT_PADDING_RIGHT
+        ));
+
+        field.setMargin(new Insets(
+                FIELD_TEXT_PADDING_TOP,
+                FIELD_TEXT_PADDING_LEFT,
+                FIELD_TEXT_PADDING_BOTTOM,
+                FIELD_TEXT_PADDING_RIGHT
+        ));
+
+        field.setHorizontalAlignment(JTextField.LEFT);
+        field.setForeground(new Color(255, 255, 255));
+        field.setCaretColor(new Color(255, 255, 255));
+        field.setSelectionColor(new Color(255, 215, 120, 160));
+        field.setSelectedTextColor(new Color(70, 40, 20));
+    }
+
+    private Font createFont(int size, int style) {
+        int resolvedStyle = style | Font.BOLD;
+        String[] fontNames = {"Yu Gothic UI", "Meiryo", "MS Gothic", "Hiragino Sans"};
+
+        for (String fontName : fontNames) {
+            Font font = new Font(fontName, resolvedStyle, size);
+
+            if (font.getFamily().equals(fontName)) {
+                return font;
+            }
+        }
+
+        return new Font("Dialog", resolvedStyle, size);
     }
 }

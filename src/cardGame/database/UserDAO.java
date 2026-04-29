@@ -5,6 +5,7 @@ import java.sql.*;
 
 public class UserDAO {
     // 로그인 확인 메서드
+    // Login check method
     public User loginCheck(String id, String pw) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
@@ -18,6 +19,7 @@ public class UserDAO {
                 if (rs.next()) {
                     User user = new User();
                     // DB의 컬럼명과 User 클래스의 필드를 연결합니다.
+                    // Map DB column names to User class fields.
                     user.setName(rs.getString("nickname"));
                     user.setUsername(rs.getString("username"));
                     user.setPassword(rs.getString("password"));
@@ -34,6 +36,7 @@ public class UserDAO {
     }
 
     // 회원가입 확인 메서드
+    // Sign up check method
     public boolean insertUser(User user) {
         String sql = "INSERT INTO users (username, password, nickname, gender) VALUES (?, ?, ?, ?)";
 
@@ -41,7 +44,9 @@ public class UserDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             // DB 컬럼 순서에 맞게 User 객체의 데이터를 매핑합니다.
+            // Map User object data according to DB column order.
             // 현재 구조상: username(ID), password(PW), nickname(별명), gender(성별)
+            // Current structure: username(ID), password(PW), nickname, gender
             pstmt.setString(1, user.getUsername()); // 상위 Player의 name(ID) 값
             pstmt.setString(2, user.getPassword());
             pstmt.setString(3, user.getName());     // User의 nickname(별명) 값
@@ -56,6 +61,7 @@ public class UserDAO {
         }
     }
     // UserDAO.java에 추가
+    // Added to UserDAO.java
     public boolean isIdDuplicate(String id) {
         String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
         try (Connection conn = DBConnection.getConnection();

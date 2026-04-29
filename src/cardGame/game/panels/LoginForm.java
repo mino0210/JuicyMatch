@@ -3,205 +3,251 @@ package cardGame.game.panels;
 import cardGame.entity.User;
 import cardGame.game.GameController;
 import cardGame.game.Sound;
-import cardGame.mgr.Manageable;
+import cardGame.game.components.WoodButton;
+import cardGame.game.components.ImagePanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Objects;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 
-import static cardGame.game.GameController.*;
-
-public class LoginForm extends JPanel{
+/**
+ * 로그인 화면 - 이미지 기반 UI / Login screen - Image-based UI
+ */
+public class LoginForm extends JPanel {
     private User loginedUser;
     private GameController gameController;
+    private BufferedImage panelImage;
+    private BufferedImage inputFieldImage;
 
-    Sound sound = new Sound();
+    private Sound sound = new Sound();
 
-    public LoginForm(GameController gameController){
+    private static final int SCREEN_W = 1920;
+    private static final int SCREEN_H = 1080;
+
+    // 입력 필드 내부 텍스트 시작 위치 조정값
+    // =========================
+    // =========================
+    /*
+     * 입력한 글자가 입력란보다 왼쪽에서 시작하면 이 값을 키우세요.
+     * Increase this value if entered text starts to the left of the input field.
+     *
+     * 35 = 조금 오른쪽
+     * 35 = slightly right
+     * 45 = 추천값
+     * 45 = recommended value
+     * 55 = 더 오른쪽
+     * 55 = more to the right
+     */
+    private static final int FIELD_TEXT_PADDING_TOP = 5;
+    private static final int FIELD_TEXT_PADDING_LEFT = 25;
+    private static final int FIELD_TEXT_PADDING_BOTTOM = 5;
+    private static final int FIELD_TEXT_PADDING_RIGHT = 15;
+
+    public LoginForm(GameController gameController) {
         this.gameController = gameController;
+        loadImages();
     }
 
+    private void loadImages() {
+        try {
+            panelImage = ImageIO.read(new File("src/cardGame/img/login_panel.png"));
+            inputFieldImage = ImageIO.read(new File("src/cardGame/img/input_field.png"));
+        } catch (IOException e) {
+            System.err.println("로그인 패널 이미지 로드 실패: " + e.getMessage());
+        }
+    }
 
     public JPanel showLogin() {
         gameController.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // 이미지 삽입을 위한 패널 정의
-        JPanel panel = new JPanel() {
-            private Image backgroundImage;
+        ImagePanel panel = new ImagePanel("src/cardGame/img/background.png");
+        panel.setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
+        panel.setLayout(null);
 
-            {
-                // 배경 이미지 로드
-                try {
-                    backgroundImage = new ImageIcon(Objects.requireNonNull
-                            (getClass().getResource(FrontImagePath + "/login_img/loginBackground.png"))).getImage();
+        int loginPanelW = 600;
+        int loginPanelH = 400;
+        int loginPanelX = (SCREEN_W - loginPanelW) / 2;
+        int loginPanelY = 340;
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
+        JPanel loginPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                if (backgroundImage != null) {
-                    // 패널 크기에 맞게 배경 이미지를 그림
-                    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+
+                if (panelImage != null) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC
+                    );
+                    g2.drawImage(panelImage, 0, 0, getWidth(), getHeight(), null);
                 }
             }
         };
 
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // 컴포넌트 간 간격 설정
+        loginPanel.setOpaque(false);
+        loginPanel.setLayout(null);
+        loginPanel.setBounds(loginPanelX, loginPanelY, loginPanelW, loginPanelH);
+        panel.add(loginPanel);
 
-        // 로그인 폼 영역
-        JPanel loginFormPanel = new JPanel(new GridBagLayout());
-        loginFormPanel.setOpaque(false); // 배경 투명
-        GridBagConstraints formGbc = new GridBagConstraints();
-        formGbc.insets = new Insets(20, 10, 20, 10); // 내부 간격 설정
+        Font labelFont = createFont(20, Font.BOLD);
+        Font fieldFont = createFont(18, Font.BOLD);
 
-        // 아이디 레이블 및 입력 필드
-        JLabel idLabel = new JLabel("아이디");
-        idLabel.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        idLabel.setForeground(Color.white);
-        formGbc.gridx = 0;
-        formGbc.gridy = 0;
-        formGbc.anchor = GridBagConstraints.WEST;
-        formGbc.insets = new Insets(10, 30, 50, 10); // 상, 좌, 하, 우 (좌측 여백 추가)
-        loginFormPanel.add(idLabel, formGbc);
+        JLabel idLabel = new JLabel("ユーザーID");
+        idLabel.setFont(labelFont);
+        idLabel.setForeground(new Color(255, 250, 240));
+        idLabel.setBounds(80, 100, 150, 30);
+        loginPanel.add(idLabel);
 
-        // 아이디 입력 필드
-        JTextField userIdField = new JTextField();
-        userIdField.setFont(new Font("맑은 고딕", Font.PLAIN, 22));
-        userIdField.setPreferredSize(new Dimension(250, 40));
-        formGbc.gridx = 1;
-        formGbc.gridy = 0;
-        formGbc.anchor = GridBagConstraints.WEST;
-        formGbc.insets = new Insets(10, 10, 50, 10); // 기본 여백
-        loginFormPanel.add(userIdField, formGbc);
+        JTextField userIdField = createStyledTextField();
+        userIdField.setFont(fieldFont);
+        userIdField.setBounds(240, 100, 280, 40);
+        loginPanel.add(userIdField);
 
-        // 비밀번호 레이블
-        JLabel passwordLabel = new JLabel("비밀번호");
-        passwordLabel.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        passwordLabel.setForeground(Color.white);
-        formGbc.gridx = 0;
-        formGbc.gridy = 1;
-        formGbc.anchor = GridBagConstraints.EAST;
-        formGbc.insets = new Insets(10, 30, 10, 10); // 상, 좌, 하, 우 (좌측 여백 추가)
-        loginFormPanel.add(passwordLabel, formGbc);
+        JLabel passwordLabel = new JLabel("パスワード");
+        passwordLabel.setFont(labelFont);
+        passwordLabel.setForeground(new Color(255, 250, 240));
+        passwordLabel.setBounds(80, 170, 150, 30);
+        loginPanel.add(passwordLabel);
 
-        // 비밀번호 입력 필드
-        JPasswordField passwordField = new JPasswordField();
-        passwordField.setFont(new Font("맑은 고딕", Font.PLAIN, 22));
-        passwordField.setPreferredSize(new Dimension(250, 40));
-        formGbc.gridx = 1;
-        formGbc.gridy = 1;
-        formGbc.anchor = GridBagConstraints.WEST;
-        formGbc.insets = new Insets(10, 10, 10, 10); // 기본 여백
-        loginFormPanel.add(passwordField, formGbc);
+        JPasswordField passwordField = createStyledPasswordField();
+        passwordField.setFont(fieldFont);
+        passwordField.setBounds(240, 170, 280, 40);
+        loginPanel.add(passwordField);
 
-        // 버튼 영역
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0)); // 버튼 사이 간격 설정
-        buttonPanel.setOpaque(false);
+        WoodButton backBtn = new WoodButton("戻る");
+        backBtn.setBounds(80, 280, 140, 60);
+        loginPanel.add(backBtn);
 
-        JButton backBtn = new JButton("돌아가기");
-        backBtn.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        backBtn.setFocusPainted(false);
-        backBtn.setBorderPainted(false);
-        buttonPanel.add(backBtn);
+        WoodButton loginBtn = new WoodButton("ログイン");
+        loginBtn.setBounds(240, 280, 140, 60);
+        loginPanel.add(loginBtn);
 
-        JButton loginCheckBtn = new JButton("로그인");
-        loginCheckBtn.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        loginCheckBtn.setForeground(Color.WHITE);
-        loginCheckBtn.setBackground(new Color(50, 150, 250));
-        loginCheckBtn.setFocusPainted(false);
-        loginCheckBtn.setBorderPainted(false);
-        loginCheckBtn.setPreferredSize(new Dimension(120, 40));
-        buttonPanel.add(loginCheckBtn);
+        WoodButton joinBtn = new WoodButton("新規登録");
+        joinBtn.setBounds(400, 280, 140, 60);
+        loginPanel.add(joinBtn);
 
-        JButton joinBtn = new JButton("회원가입");
-        joinBtn.setFont(new Font("맑은 고딕", Font.BOLD, 20));
-        joinBtn.setForeground(Color.WHITE);
-        joinBtn.setBackground(new Color(30, 200, 100));
-        joinBtn.setFocusPainted(false);
-        joinBtn.setBorderPainted(false);
-        joinBtn.setPreferredSize(new Dimension(120, 40));
-        buttonPanel.add(joinBtn);
+        loginBtn.addActionListener(e -> {
+            sound.play("BtnClick.wav", false, -10.0f);
 
-        // 버튼 패널을 로그인 폼에 추가
-        formGbc.gridx = 0;
-        formGbc.gridy = 2;
-        formGbc.gridwidth = 2; // 버튼 패널을 두 열에 걸쳐 배치
-        formGbc.anchor = GridBagConstraints.CENTER;
-        formGbc.insets = new Insets(40, 10, 20, 10); // 버튼들 간의 간격을 조정
-        loginFormPanel.add(buttonPanel, formGbc);
+            String username = userIdField.getText();
+            String password = new String(passwordField.getPassword());
 
+            if (username.isBlank() || password.isBlank()) {
+                JOptionPane.showMessageDialog(gameController, "すべての情報を入力してください。");
+                sound.play("click.wav", false, -5.0f);
+                return;
+            }
 
-        // 로그인 폼을 메인 패널에 추가
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        panel.add(loginFormPanel, gbc);
+            cardGame.database.UserDAO userDAO = new cardGame.database.UserDAO();
+            User checkUser = userDAO.loginCheck(username, password);
 
-        // 버튼 이벤트 리스너 (수정 버전)
-        loginCheckBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                sound.play("BtnClick.wav", false, -10.0f);
-                String username = userIdField.getText(); // 사용자가 입력한 아이디
-                String password = new String(passwordField.getPassword()); // 사용자가 입력한 비번
+            if (checkUser != null) {
+                JOptionPane.showMessageDialog(gameController, "ユーザー: " + username + " がログインしました。");
+                sound.play("click.wav", false, -5.0f);
 
-                if (username.isBlank() || password.isBlank()) {
-                    JOptionPane.showMessageDialog(gameController, "모든 정보를 입력해주세요.");
-                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때
-                    return;
-                }
-
-                // --- 여기부터 DB 연동 로직입니다 ---
-                cardGame.database.UserDAO userDAO = new cardGame.database.UserDAO();
-                User checkUser = userDAO.loginCheck(username, password);
-
-                if (checkUser != null) {
-                    // 로그인 성공
-                    JOptionPane.showMessageDialog(gameController, "사용자: " + username + "이 로그인했습니다.");
-                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때
-
-                    loginedUser = checkUser;
-                    // 기존 변수 구조 유지: 게임 컨트롤러에 유저 정보 전달
-                    gameController.switchToPanel("gameMenu", loginedUser);
-                } else {
-                    // 로그인 실패 (DB에 일치하는 정보가 없음)
-                    JOptionPane.showMessageDialog(gameController, "아이디 또는 비밀번호가 틀렸습니다.");
-                    sound.play("click.wav", false, -5.0f); // 팝업 닫힐 때
-                }
+                loginedUser = checkUser;
+                gameController.switchToPanel("gameMenu", loginedUser);
+            } else {
+                JOptionPane.showMessageDialog(gameController, "IDまたはパスワードが間違っています。");
+                sound.play("click.wav", false, -5.0f);
             }
         });
 
-        backBtn.addActionListener(e ->{
-                    sound.play("BtnClick.wav", false, -10.0f);
-                    gameController.switchToPanel("gameMenu",loginedUser);
-                });
+        backBtn.addActionListener(e -> {
+            sound.play("BtnClick.wav", false, -10.0f);
+            gameController.switchToPanel("gameMenu", loginedUser);
+        });
 
         joinBtn.addActionListener(e -> {
-                    sound.play("BtnClick.wav", false, -10.0f);
-                    gameController.switchToPanel("join",loginedUser);
-                }
-        );
+            sound.play("BtnClick.wav", false, -10.0f);
+            gameController.switchToPanel("join", loginedUser);
+        });
 
         return panel;
     }
 
-    private boolean checkKwd(String username) {
-        User user;
-        for (Manageable m : userMgr.mList) {
-            user = (User) m;
-            if (user.matches(username))
-                return true;
-        }
-        return false;
+    private JTextField createStyledTextField() {
+        JTextField field = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (inputFieldImage != null) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC
+                    );
+                    g2.drawImage(inputFieldImage, 0, 0, getWidth(), getHeight(), null);
+                }
+
+                super.paintComponent(g);
+            }
+        };
+
+        applyInputFieldStyle(field);
+        return field;
     }
 
+    private JPasswordField createStyledPasswordField() {
+        JPasswordField field = new JPasswordField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (inputFieldImage != null) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC
+                    );
+                    g2.drawImage(inputFieldImage, 0, 0, getWidth(), getHeight(), null);
+                }
 
+                super.paintComponent(g);
+            }
+        };
+
+        applyInputFieldStyle(field);
+        return field;
+    }
+
+    private void applyInputFieldStyle(JTextField field) {
+        field.setOpaque(false);
+
+        field.setBorder(BorderFactory.createEmptyBorder(
+                FIELD_TEXT_PADDING_TOP,
+                FIELD_TEXT_PADDING_LEFT,
+                FIELD_TEXT_PADDING_BOTTOM,
+                FIELD_TEXT_PADDING_RIGHT
+        ));
+
+        field.setMargin(new Insets(
+                FIELD_TEXT_PADDING_TOP,
+                FIELD_TEXT_PADDING_LEFT,
+                FIELD_TEXT_PADDING_BOTTOM,
+                FIELD_TEXT_PADDING_RIGHT
+        ));
+
+        field.setHorizontalAlignment(JTextField.LEFT);
+        field.setForeground(new Color(255, 255, 255));
+        field.setCaretColor(new Color(255, 255, 255));
+        field.setSelectionColor(new Color(255, 215, 120, 160));
+        field.setSelectedTextColor(new Color(70, 40, 20));
+    }
+
+    private Font createFont(int size, int style) {
+        int resolvedStyle = style | Font.BOLD;
+        String[] fontNames = {"Yu Gothic UI", "Meiryo", "MS Gothic", "Hiragino Sans"};
+
+        for (String fontName : fontNames) {
+            Font font = new Font(fontName, resolvedStyle, size);
+
+            if (font.getFamily().equals(fontName)) {
+                return font;
+            }
+        }
+
+        return new Font("Dialog", resolvedStyle, size);
+    }
 }

@@ -12,8 +12,8 @@ import static cardGame.game.GameController.*;
 public class Card extends JButton {
     private int number;
     private boolean matched;
-    private int cardWidth = 150;
-    private int cardHeight = 210;
+    private int cardWidth = 136; //120
+    private int cardHeight = 170; //150
 
     private Sound cardFlip = new Sound();
     private Sound successSound = new Sound();
@@ -48,13 +48,12 @@ public class Card extends JButton {
     public int getNumber() { return number; }
     public boolean isMatched() { return matched; }
 
-    // [수정] 사용자가 클릭 시 호출 - 소리가 나도록 true 전달
     public void flip() {
         if (matched) return;
         if (isRevealed) {
             hide();
         } else {
-            reveal(true); // 클릭 시에는 소리 재생
+            reveal(true);
         }
     }
 
@@ -65,14 +64,14 @@ public class Card extends JButton {
         }
     }
 
-    // [기존 reveal()을 대체] 매개변수에 따라 소리 재생 여부 결정
     public void reveal(boolean playSound) {
         if (matched) return;
-        String cardName = "/" + cardTheme + "card" + checkNum(number) + ".png";
+        String folder = cardTheme.equals("vegetable") ? "vegtable" : "fruit";
+        String filePrefix = cardTheme;
+        String cardName = "/" + folder + "/" + filePrefix + "card" + checkNum(number) + ".png";
         String imagePath = FrontImagePath + cardName;
         setIcon(resizeImageIcon(imagePath, cardWidth, cardHeight));
 
-        // playSound가 true일 때만 뒤집기 소리 재생
         if (playSound) {
             cardFlip.play("Card_Flip.wav", false, 0);
         }
@@ -82,7 +81,6 @@ public class Card extends JButton {
         repaint();
     }
 
-    // [오버로딩] 기존 코드가 reveal()을 인자 없이 호출할 경우를 위해 기본값 true 설정
     public void reveal() {
         reveal(true);
     }
@@ -146,11 +144,12 @@ public class Card extends JButton {
     }
 
     public ImageIcon getMatchedImageIcon() {
-        String cardName = "/" + cardTheme + checkNum(number) + ".png";
+        String folder = cardTheme.equals("vegetable") ? "vegtable" : "fruit";
+        String filePrefix = cardTheme;
+        String cardName = "/" + folder + "/" + filePrefix + checkNum(number) + ".png";
         String imagePath = FrontImagePath + cardName;
-        double scale = 0.45;
-        int scaledWidth = (int) (cardWidth * scale);
-        int scaledHeight = (int) (cardHeight * scale);
+        int scaledWidth = 35;
+        int scaledHeight = 35;
         return resizeImageIcon(imagePath, scaledWidth, scaledHeight);
     }
 }

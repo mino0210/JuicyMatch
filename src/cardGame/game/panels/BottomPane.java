@@ -33,6 +33,7 @@ class BottomPane extends JPanel implements ActionListener {
 		panel.setBackground(new Color(255, 232, 204));
 
 		// 검색창
+		// Search field
 		gameIdField = new JTextField("", 20);
 		gameIdField.setMaximumSize(new Dimension(1500, 40));
 		gameIdField.setFont(gameIdField.getFont().deriveFont(17f));
@@ -40,22 +41,26 @@ class BottomPane extends JPanel implements ActionListener {
 		gameIdField.setBorder(BorderFactory.createLineBorder(Color.white));
 
 		// 플레이스홀더 초기화
+		// Initialize placeholder
 		initPlaceholder();
 		panel.add(gameIdField);
 
 		// 검색 버튼
+		// Search button
 		searchButton = new JButton("검색");
 		customizeButton(searchButton);
 		panel.add(Box.createRigidArea(new Dimension(10, 0)));
 		panel.add(searchButton);
 
 		// 초기화 버튼
+		// Reset button
 		resetButton = new JButton("초기화");
 		customizeButton(resetButton);
 		panel.add(Box.createRigidArea(new Dimension(10, 0)));
 		panel.add(resetButton);
 
 		// 내점수 버튼
+		// My score button
 		myScoreButton = new JButton("내점수");
 		customizeButton(myScoreButton);
 		panel.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -68,6 +73,7 @@ class BottomPane extends JPanel implements ActionListener {
 		addButtonMouseListener(myScoreButton);
 
 		// Enter 키로 검색 버튼 클릭
+		// Trigger search button on Enter key
 		gameIdField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -108,10 +114,12 @@ class BottomPane extends JPanel implements ActionListener {
 
 	void initPlaceholder() {
 		// 플레이스홀더
+		// Placeholder
 		gameIdField.setText("아이디를 입력하세요!");
 		gameIdField.setForeground(BUTTON_BORDER_COLOR); // 플레이스홀더 텍스트 색상 설정
 
 		// 검색 창 클릭 - 플레이스홀더 제거
+		// Search field clicked - remove placeholder
 		gameIdField.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -146,6 +154,7 @@ class BottomPane extends JPanel implements ActionListener {
 
 	void moveSelectedToEdits(String[] rowTexts) {
 		// 선택된 데이터를 텍스트 필드에 반영하는 로직
+		// Logic to reflect selected data into text field
 	}
 
 	@Override

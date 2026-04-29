@@ -17,6 +17,7 @@ public class GameController extends JFrame {
     public static Manager recordMgr = new Manager();
     private GameMenuPanel gameMenu;
     private Board board = new Board(4, 3);
+    private final Sound menuBGM = new Sound();
 
     private User loginedUser;
 
@@ -29,35 +30,53 @@ public class GameController extends JFrame {
     public static int cols;
     public static int level = 1;
 
+    private static final int GAME_WIDTH = 1920;
+    private static final int GAME_HEIGHT = 1080;
+
+    public void playMenuBGM() {
+        if (!menuBGM.isPlaying()) {
+            menuBGM.play("Mainmusic.wav", true, -25.0f);
+        }
+    }
+
+    public void stopMenuBGM() {
+        menuBGM.stop();
+    }
+
     public void switchToPanel(String panelName, User user) {
         if (user != null) {
             this.loginedUser = user;
         }
 
         JPanel panel;
+
         switch (panelName) {
             case "gameMenu" -> panel = gameMenu.getPanel(this.loginedUser);
+
             case "login" -> panel = new LoginForm(this).showLogin();
+
             case "join" -> panel = new JoinForm(this).showJoin();
+
             case "ranking" -> {
                 try {
-                    TablePanel rankingTable = TablePanel.GetInstance();
-                    rankingTable.initUI();
-                    rankingTable.resetTable();
                     panel = new RankingPanel(this, this.loginedUser).showRanking();
                 } catch (Exception e) {
                     e.printStackTrace();
                     panel = gameMenu.getPanel(this.loginedUser);
                 }
             }
+
             case "explanation" -> panel = new ExplanationPanel(this, this.loginedUser).showExplanation();
+
             case "selectLevel" -> {
                 SelectLevelPanel selectLevelPanel = new SelectLevelPanel(this, this.loginedUser);
                 panel = selectLevelPanel.selectLevel();
                 board = selectLevelPanel.getBoard();
             }
+
             default -> panel = gameMenu.getPanel(this.loginedUser);
         }
+
         updateContentPane(panel);
     }
 
@@ -67,25 +86,44 @@ public class GameController extends JFrame {
         }
 
         JPanel panel;
-        if (panelName.equals("startGame")) {
-            int levelNum = 1;
-            if (rows == 3 && cols == 4) levelNum = 1;
-            else if (rows == 4 && cols == 4) levelNum = 2;
-            else if (rows == 4 && cols == 5) levelNum = 3;
 
-            // level 변수를 명확히 전달
-            GameWindow gameWindow = new GameWindow(this, this.loginedUser, board, new Player("컴퓨터"), recordMgr, levelNum);
+        if (panelName.equals("startGame")) {
+            stopMenuBGM();
+            // [변경] 모든 레벨이 4x5 보드 사용, level 변수로 직접 판단
+            // [Changed] All levels use 4x5, use level variable directly
+            int levelNum = GameController.level;
+            if (levelNum < 1 || levelNum > 3) levelNum = 1;
+
+            String cpuName = "CPU Lv." + levelNum;
+
+            GameWindow gameWindow = new GameWindow(
+                    this,
+                    this.loginedUser,
+                    board,
+                    new Player(cpuName),
+                    recordMgr,
+                    levelNum
+            );
+
             panel = gameWindow.setupGame();
             gameWindow.setupCardListeners();
         } else {
             panel = gameMenu.getPanel(this.loginedUser);
         }
+
         updateContentPane(panel);
     }
 
     private void updateContentPane(JPanel panel) {
-        getContentPane().removeAll();
-        getContentPane().add(panel);
+        panel.setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
+        panel.setMinimumSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
+        panel.setMaximumSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
+
+        setContentPane(panel);
+        pack();
+
+        setLocationRelativeTo(null);
+
         revalidate();
         repaint();
     }
@@ -98,52 +136,48 @@ public class GameController extends JFrame {
 
     public void logout() {
         this.loginedUser = null;
-        // recordMgr를 초기화할 필요가 있다면 (중복 로드 방지)
-        // recordMgr.getMList().clear();
-
-        getContentPane().removeAll();
         switchToPanel("login", null);
 
-        revalidate();
-        repaint();
         System.out.println("[시스템] 로그아웃 완료 및 데이터 메모리 정리");
     }
 
-    /**
-     * [수정] 현재 존재하는 필드와 클래스만 사용하여 기록 저장
-     */
     public void gameFinished(int finalScore) {
-        if (this.loginedUser == null) return;
+        if (this.loginedUser == null) {
+            return;
+        }
 
-        // Record 클래스 생성자에 맞춰 객체 생성 (기존 소스 기반)
         Record newRecord = new Record(this.loginedUser, finalScore, GameController.level);
 
         RecordDAO recordDAO = new RecordDAO();
         boolean success = recordDAO.insertRecord(newRecord);
 
         if (success) {
-            // 메모리 리스트에 추가하여 랭킹 반영
             recordMgr.addMList(newRecord);
-            // 테이블 UI 갱신
-            TablePanel.GetInstance().loadData();
             System.out.println("[시스템] DB 및 메모리 기록 저장 완료");
         }
     }
 
     public void run() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setSize(screenSize.width, screenSize.height);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        System.setProperty("sun.java2d.uiScale", "1.0");
+
+        setTitle("Juicy Match Card Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+
+        /*
+         * 1920x1080 좌표계를 그대로 쓰기 위해 타이틀바 제거.
+         * 반드시 setVisible(true)보다 먼저 호출해야 함.
+         */
+        setUndecorated(true);
 
         gameManager = new GameManager(recordMgr);
         gameManager.callInfo();
 
-        setTitle("Juicy Match Card Game");
         gameMenu = new GameMenuPanel(this, null);
         JPanel gameMenuPanel = gameMenu.getPanel(null);
 
-        add(gameMenuPanel);
+        updateContentPane(gameMenuPanel);
+
         setVisible(true);
     }
 

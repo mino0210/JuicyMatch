@@ -18,6 +18,7 @@ public class User extends Player implements Manageable {
     private int totalScore;
 
     // GameWindow에서 실시간 점수 처리를 위해 필요한 필드입니다.
+    // Required field for real-time score handling in GameWindow.
     private int score;
 
     public User() {};
@@ -29,10 +30,12 @@ public class User extends Player implements Manageable {
         this.gender = gender;
 
         // 상위 클래스의 name 필드 초기화
+        // Initialize parent class's name field
         super.setUsername(username);
     }
 
     // --- 실시간 점수 관리를 위해 추가된 메서드들 ---
+    // --- Methods added for real-time score management ---
 
     public void addScore(int amount) {
         this.score += amount;
@@ -59,6 +62,13 @@ public class User extends Player implements Manageable {
     public String getUsername() {
         return username;
     }
+    
+    // 사용자 ID 반환 (getUsername과 동일)
+    // Get User ID (same as getUsername)
+    public String getUserId() {
+        return username;
+    }
+    
     public String getPassword() {
         return password;
     }
@@ -128,6 +138,7 @@ public class User extends Player implements Manageable {
     @Override
     public void saveToFile(String filePath) {
         // 회원 가입 시 파일에 저장
+        // Save to file on sign up
         try{
             File file = new File(filePath);
 

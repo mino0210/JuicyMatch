@@ -20,12 +20,14 @@ public class CustomLabel extends JLabel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // 글씨 테두리
+        // Text border
         g2.setFont(getFont());
         g2.setColor(outlineColor); 
         g2.setStroke(new BasicStroke(10f)); 
         g2.drawGlyphVector(getFont().createGlyphVector(g2.getFontRenderContext(), getText()), 0, getHeight() / 2 + getFont().getSize() / 2);
 
         // 내부 글씨
+        // Inner text
         g2.setColor(getForeground()); 
         super.paintComponent(g2);
 

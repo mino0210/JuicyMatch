@@ -20,6 +20,7 @@ public class BackgroundPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         // 이미지를 패널 크기에 맞게 그리기
+        // Draw image to fit panel size
         g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
     }
 }
