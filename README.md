@@ -1,7 +1,7 @@
 # 🍎 JuicyMatch
 
 <p align="center">
-  <img src="docs/images/main-menu.png" alt="JuicyMatch Main Menu" width="720" />
+  <img src="docs/images/main_menu.png" alt="JuicyMatch Main Menu" width="720" />
 </p>
 
 <p align="center">
