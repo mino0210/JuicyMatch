@@ -12,8 +12,8 @@ public class DBConnection {
     private static final Properties props = new Properties();
 
     static {
-        // FileInputStream 대신 getResourceAsStream을 사용하여 빌드 경로 내의 파일을 안전하게 읽음
-        // Use getResourceAsStream instead of FileInputStream to safely read files in build path
+        
+        
         try (InputStream is = DBConnection.class.getClassLoader().getResourceAsStream("db.properties")) {
             if (is == null) {
                 System.err.println("db.properties 파일을 찾을 수 없습니다! src 폴더 바로 아래에 있는지 확인하세요.");
@@ -29,8 +29,8 @@ public class DBConnection {
 
     public static Connection getConnection() {
         try {
-            // properties 파일의 키 이름(url, username, password)과 일치하도록 수정
-            // Match key names (url, username, password) with properties file
+            
+            
             String url = props.getProperty("url");
             String user = props.getProperty("username");
             String password = props.getProperty("password");

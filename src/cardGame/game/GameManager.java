@@ -27,22 +27,22 @@ public class GameManager {
         return null;
     }
 
-    // GameManager.java 의 callInfo 메서드 내부
-    // GameManager.java
+    
+    
     public void callInfo() {
-        // 1. 기존 파일 읽기 로직은 모두 주석 처리되어 있어야 합니다.
-        // 1. All legacy file reading logic should be commented out.
+        
+        
 
-        // 2. DB에서 모든 기록 불러오기
-        // 2. Load all records from DB
+        
+        
         RecordDAO recordDAO = new RecordDAO();
         List<Record> loadedRecords = recordDAO.getAllRecords();
 
-        // 3. 불러온 데이터를 Manager의 리스트(mList)에 담기
-        // 3. Put loaded data into Manager's list (mList)
+        
+        
         if (loadedRecords != null) {
             for (Record r : loadedRecords) {
-                recordMgr.addMList(r); // Manager 클래스의 addMList 메서드 사용
+                recordMgr.addMList(r); 
             }
             System.out.println("[시스템] DB에서 " + loadedRecords.size() + "개의 기록을 로드했습니다.");
         }

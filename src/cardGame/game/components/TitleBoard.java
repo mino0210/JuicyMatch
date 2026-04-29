@@ -8,38 +8,38 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-/**
- * 타이틀 간판 컴포넌트 - 텍스트 렌더링 / Title board component - Text rendering
- */
+
+
+
 public class TitleBoard extends JPanel {
     
-    // 이미지
-    // Image
+    
+    
     private static BufferedImage boardImage;
     
-    // 텍스트
-    // Text
+    
+    
     private String titleText;
     
-    // 색상
-    // Colors
-    private static final Color TEXT_COLOR = new Color(255, 250, 240); // Cream white
-    private static final Color SHADOW_COLOR = new Color(101, 67, 33, 200); // Brown shadow
     
-    // 크기
-    // Size
+    
+    private static final Color TEXT_COLOR = new Color(255, 250, 240); 
+    private static final Color SHADOW_COLOR = new Color(101, 67, 33, 200); 
+    
+    
+    
     private int boardWidth = 500;
     private int boardHeight = 150;
     
-    // 정적 초기화
-    // Static initialization
+    
+    
     static {
         loadStaticImage();
     }
     
-    /**
-     * 이미지 로드 (정적) / Load image statically
-     */
+    
+
+
     private static void loadStaticImage() {
         try {
             URL url = TitleBoard.class.getResource("/cardGame/img/title_board_empty.png");
@@ -54,9 +54,9 @@ public class TitleBoard extends JPanel {
         }
     }
     
-    /**
-     * 생성자 / Constructor
-     */
+    
+
+
     public TitleBoard(String text) {
         this(text, 500, 150);
     }
@@ -69,9 +69,9 @@ public class TitleBoard extends JPanel {
         setupPanel();
     }
     
-    /**
-     * 패널 설정 / Setup panel
-     */
+    
+
+
     private void setupPanel() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setMaximumSize(new Dimension(boardWidth, boardHeight));
@@ -79,9 +79,9 @@ public class TitleBoard extends JPanel {
         setOpaque(false);
     }
     
-    /**
-     * 폰트 생성 / Create font
-     */
+    
+
+
     private Font createFont(int size, int style) {
         String[] fontNames = {"Yu Gothic UI", "Meiryo", "MS Gothic", "Hiragino Sans"};
         
@@ -110,17 +110,17 @@ public class TitleBoard extends JPanel {
         int width = getWidth();
         int height = getHeight();
         
-        // 1. 배경 이미지 그리기
-        // Draw background
+        
+        
         if (boardImage != null) {
             g2.drawImage(boardImage, 0, 0, width, height, null);
         }
         
-        // 2. 텍스트 그리기
-        // Draw text
+        
+        
         if (titleText != null && !titleText.isEmpty()) {
-            // 폰트 크기 자동 조정
-            // Auto-adjust font size
+            
+            
             int fontSize = Math.min(width / 8, 48);
             if (titleText.length() > 6) {
                 fontSize = Math.min(width / 10, 36);
@@ -134,13 +134,13 @@ public class TitleBoard extends JPanel {
             int x = (width - textWidth) / 2;
             int y = (height + textHeight) / 2 - 5;
             
-            // 그림자
-            // Shadow
+            
+            
             g2.setColor(SHADOW_COLOR);
             g2.drawString(titleText, x + 3, y + 3);
             
-            // 텍스트
-            // Text
+            
+            
             g2.setColor(TEXT_COLOR);
             g2.drawString(titleText, x, y);
         }
@@ -148,9 +148,9 @@ public class TitleBoard extends JPanel {
         g2.dispose();
     }
     
-    /**
-     * 텍스트 변경 / Change text
-     */
+    
+
+
     public void setTitleText(String text) {
         this.titleText = text;
         repaint();

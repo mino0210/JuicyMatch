@@ -14,9 +14,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+
+
+
+
 /**
- * 설명 화면 - 페이지형 튜토리얼 패널
- * Explanation screen with 4 tutorial pages.
+ * 튜토리얼 이미지를 페이지별로 보여주는 설명 화면입니다.
+ * Help screen that displays tutorial images page by page.
  */
 public class ExplanationPanel extends JPanel {
     private final GameController gameController;
@@ -36,9 +40,9 @@ public class ExplanationPanel extends JPanel {
     private static final int SCREEN_W = 1920;
     private static final int SCREEN_H = 1080;
 
-    /**
-     * 페이지별 하단 설명 문구
-     */
+    
+
+
     private static final String[][] PAGE_TEXTS = {
             {"テーマとレベルを選んでゲームスタート！"},
             {"カードの位置を覚えて、", "同じ絵柄のペアをそろえましょう！"},
@@ -66,34 +70,38 @@ public class ExplanationPanel extends JPanel {
         }
     }
 
+    /**
+     * 설명 화면 전체 UI를 생성하고 페이지 이동 버튼을 연결합니다.
+     * Builds the full help screen UI and connects page navigation buttons.
+     */
     public JPanel showExplanation() {
         ImagePanel panel = new ImagePanel("src/cardGame/img/background.png");
         panel.setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
         panel.setLayout(null);
 
-        // =========================
-        // 타이틀 위치 조정값 / Title position tuning
-        // =========================
+        
+        
+        
         int titleW = 500;
         int titleH = 150;
         int titleX = (SCREEN_W - titleW) / 2;
 
-        // 타이틀만 위/아래로 움직이고 싶으면 이 값 수정
+        
         int titleY = 0;
 
         TitleBoard titleBoard = new TitleBoard("遊び方");
         titleBoard.setBounds(titleX, titleY, titleW, titleH);
         panel.add(titleBoard);
 
-        // =========================
-        // 설명 패널 위치 / 크기 조정값
-        // =========================
+        
+        
+        
         int explainW = 900;
         int explainH = 700;
 
-        /*
-         * 설명 패널 자체의 Y 위치
-         */
+        
+
+
         int explainOffsetY = -60;
 
         int explainX = (SCREEN_W - explainW) / 2;
@@ -130,32 +138,32 @@ public class ExplanationPanel extends JPanel {
         explainPanel.setBounds(explainX, explainY, explainW, explainH);
         panel.add(explainPanel);
 
-        // =========================
-        // 하단 설명 텍스트 / 메뉴버튼 / 화살표 위치 조정값
-        // 설명 패널과 분리해서 조정할 수 있게 따로 뺐습니다.
-        // =========================
-        int textAreaH = 65; //90
+        
+        
+        
+        
+        int textAreaH = 65; 
 
-        /*
-         * 설명 이미지와 하단 텍스트 사이 기본 간격
-         * 이 값은 explainPanel 기준 기본 위치 계산에 사용됩니다.
-         */
-        int panelToTextGap = 72; //24
+        
 
-        /*
-         * 하단 텍스트와 메뉴/화살표 버튼 사이 간격
-         */
+
+
+        int panelToTextGap = 72; 
+
+        
+
+
         int textToButtonGap = 40;
 
-        /*
-         * 하단 그룹 전체 이동값
-         * 대상: 설명 텍스트 + 왼쪽 화살표 + 오른쪽 화살표 + メニューへ 버튼
-         *
-         * 값 증가: 하단 그룹이 아래로 이동
-         * 값 감소: 하단 그룹이 위로 이동
-         *
-         * 현재 화면에서 텍스트와 버튼을 위로 끌어올리고 싶다고 하셨으므로 -80 적용
-         */
+        
+
+
+
+
+
+
+
+
         int bottomGroupOffsetY = -80;
 
         int backBtnW = 300;
@@ -184,10 +192,10 @@ public class ExplanationPanel extends JPanel {
 
         descriptionPanel.setOpaque(false);
 
-        /*
-         * 설명 텍스트 영역
-         * X, W를 넓게 잡아 긴 일본어 문장이 잘리지 않게 했습니다.
-         */
+        
+
+
+
         descriptionPanel.setBounds(
                 explainX - 80,
                 descriptionY,
@@ -257,30 +265,34 @@ public class ExplanationPanel extends JPanel {
         }
     }
 
+    
+
+
     /**
-     * 원형 번호 위치 세부조정용 메서드
+     * 상단 원형 배지 안에 현재 페이지 번호를 그립니다.
+     * Draws the current page number inside the top circular badge.
      */
     private void drawPageNumber(Graphics2D g2, int pageNumber, int panelW, int panelH) {
         int numberCenterX = panelW / 2;
 
-        /*
-         * 숫자 원형 배지 중심 Y
-         * 값 증가: 숫자가 아래로 이동
-         * 값 감소: 숫자가 위로 이동
-         *
-         * 현재 0.178은 wood_panel_explain1~4 기준 원형 중앙에 맞춘 값입니다.
-         */
+        
+
+
+
+
+
+
         int numberCenterY = (int) (panelH * 0.178);
 
-        /*
-         * 숫자 미세조정
-         */
+        
+
+
         int numberOffsetX = 0;
         int numberOffsetY = 8;
 
-        /*
-         * 숫자 크기
-         */
+        
+
+
         int fontSize = 44;
 
         String text = String.valueOf(pageNumber);
@@ -298,39 +310,43 @@ public class ExplanationPanel extends JPanel {
         );
     }
 
+    
+
+
     /**
-     * 하단 설명 문구 위치 세부조정용 메서드
+     * 현재 페이지에 맞는 하단 설명 문구를 그립니다.
+     * Draws the bottom description text for the current page.
      */
     private void drawPageDescription(Graphics2D g2, int areaW, int areaH) {
         String[] lines = PAGE_TEXTS[currentPage];
 
         int centerX = areaW / 2;
 
-        /*
-         * 설명 문구 크기
-         */
+        
+
+
         int fontSize = 28;
 
-        /*
-         * 2줄 문구 줄 간격
-         */
+        
+
+
         int lineGap = 34;
 
-        /*
-         * 1줄 문구 Y 위치
-         * 값 증가: 아래로 이동
-         * 값 감소: 위로 이동
-         */
+        
+
+
+
+
         int singleLineY = 42;
 
-        /*
-         * 2줄 문구 첫 줄 Y 위치
-         */
+        
+
+
         int firstLineY = 24;
 
-        /*
-         * 2줄 문구 둘째 줄 Y 위치
-         */
+        
+
+
         int secondLineY = firstLineY + lineGap;
 
         Font font = createFont(fontSize, Font.BOLD);
@@ -373,10 +389,10 @@ public class ExplanationPanel extends JPanel {
         }
     }
 
-    /**
-     * centerY를 기준으로 텍스트를 세로 중앙 정렬해서 그림
-     * 숫자처럼 원형 안에 넣어야 하는 텍스트에 사용합니다.
-     */
+    
+
+
+
     private void drawOutlinedCenteredTextByCenter(
             Graphics2D g2,
             String text,
@@ -404,10 +420,10 @@ public class ExplanationPanel extends JPanel {
         );
     }
 
-    /**
-     * baselineY 기준 중앙 정렬 텍스트
-     * 설명 문구처럼 baseline을 직접 조정하고 싶은 텍스트에 사용합니다.
-     */
+    
+
+
+
     private void drawOutlinedCenteredText(
             Graphics2D g2,
             String text,

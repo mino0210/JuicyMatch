@@ -13,9 +13,9 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * 로그인 화면 - 이미지 기반 UI / Login screen - Image-based UI
- */
+
+
+
 public class LoginForm extends JPanel {
     private User loginedUser;
     private GameController gameController;
@@ -27,20 +27,20 @@ public class LoginForm extends JPanel {
     private static final int SCREEN_W = 1920;
     private static final int SCREEN_H = 1080;
 
-    // 입력 필드 내부 텍스트 시작 위치 조정값
-    // =========================
-    // =========================
-    /*
-     * 입력한 글자가 입력란보다 왼쪽에서 시작하면 이 값을 키우세요.
-     * Increase this value if entered text starts to the left of the input field.
-     *
-     * 35 = 조금 오른쪽
-     * 35 = slightly right
-     * 45 = 추천값
-     * 45 = recommended value
-     * 55 = 더 오른쪽
-     * 55 = more to the right
-     */
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
     private static final int FIELD_TEXT_PADDING_TOP = 5;
     private static final int FIELD_TEXT_PADDING_LEFT = 25;
     private static final int FIELD_TEXT_PADDING_BOTTOM = 5;

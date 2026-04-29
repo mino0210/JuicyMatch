@@ -1,3 +1,0 @@
-db.url=jdbc:mysql://localhost:3306/card_game_db?serverTimezone=UTC
-db.user=본인의계정
-db.password=본인의비밀번호

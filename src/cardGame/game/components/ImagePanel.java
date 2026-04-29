@@ -8,9 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-/**
- * 이미지 배경 패널 / Image background panel
- */
+
+
+
 public class ImagePanel extends JPanel {
 
     private BufferedImage backgroundImage;

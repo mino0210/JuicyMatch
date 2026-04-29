@@ -11,35 +11,35 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * 나무 버튼 컴포넌트 - 3상태 + 호버 사운드 (완전 불투명 버전)
- * Wood button - 3 states + hover sound (fully opaque version)
- */
+
+
+
+
 public class WoodButton extends JButton {
     
-    // 이미지
-    // Images
+    
+    
     private BufferedImage normalImage;
     private BufferedImage hoverImage;
     private BufferedImage pressedImage;
     private BufferedImage currentImage;
     
-    // 텍스트
-    // Text
+    
+    
     private String buttonText;
     
-    // 색상
-    // Colors
+    
+    
     private static final Color TEXT_COLOR = new Color(255, 250, 240);
     private static final Color SHADOW_COLOR = new Color(101, 67, 33, 150);
     
-    // 크기
-    // Size
+    
+    
     private int buttonWidth = 300;
     private int buttonHeight = 70;
     
-    // 호버 사운드 (전역 throttling)
-    // Hover sound (global throttling)
+    
+    
     private static long lastHoverSoundTime = 0;
     private static final long HOVER_THROTTLE_MS = 100;
     private boolean hoverSoundEnabled = true;
@@ -58,22 +58,22 @@ public class WoodButton extends JButton {
     
     private void loadImages() {
         try {
-            // 이미지를 로드하면서 알파 채널을 강제로 불투명하게 변경
-            // Load images and force alpha channel to fully opaque
+            
+            
             normalImage = makeOpaque(ImageIO.read(new File("src/cardGame/img/wood_button_normal.png")));
             hoverImage = makeOpaque(ImageIO.read(new File("src/cardGame/img/wood_button_hover.png")));
             pressedImage = makeOpaque(ImageIO.read(new File("src/cardGame/img/wood_button_pressed.png")));
             currentImage = normalImage;
         } catch (IOException e) {
             System.err.println("버튼 이미지 로드 실패: " + e.getMessage());
-            // Failed to load button images
+            
         }
     }
     
-    /**
-     * 이미지의 알파 채널을 모두 불투명하게 변환
-     * Convert all alpha channel pixels to fully opaque
-     */
+    
+
+
+
     private BufferedImage makeOpaque(BufferedImage src) {
         if (src == null) return null;
         int w = src.getWidth();
@@ -83,8 +83,8 @@ public class WoodButton extends JButton {
             for (int x = 0; x < w; x++) {
                 int rgb = src.getRGB(x, y);
                 int alpha = (rgb >> 24) & 0xFF;
-                // 알파가 일정 임계값 이상이면 완전 불투명으로 변환
-                // If alpha is above threshold, make fully opaque
+                
+                
                 if (alpha > 30) {
                     rgb = (0xFF << 24) | (rgb & 0x00FFFFFF);
                 }
@@ -103,8 +103,8 @@ public class WoodButton extends JButton {
         setBorderPainted(false);
         setFocusPainted(false);
         setOpaque(false);
-        // 호버 시 회색 반투명 효과 비활성화
-        // Disable hover translucent effect
+        
+        
         setRolloverEnabled(false);
         
         setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -123,8 +123,8 @@ public class WoodButton extends JButton {
                                 Sound s = new Sound();
                                 s.play("hover_wood.wav", false, -20.0f);
                             } catch (Exception ex) {
-                                // 호버 사운드 실패는 조용히 무시
-                                // Silently ignore hover sound failure
+                                
+                                
                             }
                         }).start();
                     }
@@ -173,8 +173,8 @@ public class WoodButton extends JButton {
         
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        // 알파 합성을 SRC_OVER로 강제 - 완전히 불투명하게 그림
-        // Force alpha composite to SRC_OVER - draws fully opaque
+        
+        
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         
         int width = getWidth();

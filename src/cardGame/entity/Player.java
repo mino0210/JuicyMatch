@@ -3,7 +3,7 @@ package cardGame.entity;
 public class Player {
     private String name;
     private int score;
-    private int count; // 연속 성공 카운트
+    private int count; 
 
     public Player(String name) {
         this.name = name;

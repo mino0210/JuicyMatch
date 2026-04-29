@@ -12,8 +12,8 @@ import static cardGame.game.GameController.*;
 public class Card extends JButton {
     private int number;
     private boolean matched;
-    private int cardWidth = 136; //120
-    private int cardHeight = 170; //150
+    private int cardWidth = 136; 
+    private int cardHeight = 170; 
 
     private Sound cardFlip = new Sound();
     private Sound successSound = new Sound();

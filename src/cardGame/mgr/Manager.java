@@ -29,18 +29,18 @@ public class Manager {
     }
 
     public Scanner openFile(String filename) {
-//        Scanner filein = null;
-//        try {
-//            filein = new Scanner(new File(filename));
-// System.out.println("파일 입력 오류");
-// } catch (IOException e) {
-//            System.exit(0);
-//        }
-//        return filein;
+
+
+
+
+
+
+
+
         Scanner filein = null;
         try {
-            // 리소스 파일을 클래스 로더를 통해 읽기
-            // Read resource file via class loader
+            
+            
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filename);
             if (inputStream == null) {
                 throw new IOException("파일을 찾을 수 없습니다: " + filename);
@@ -56,8 +56,8 @@ public class Manager {
     public void addMList(Manageable m){
         mList.add(m);
     }
-    // search 추가
-    // Added search method
+    
+    
 
     public Manageable findManageable(String kwd){
         for (Manageable m : mList) {

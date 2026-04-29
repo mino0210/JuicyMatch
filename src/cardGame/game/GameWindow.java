@@ -8,21 +8,27 @@ import cardGame.entity.Record;
 import cardGame.entity.User;
 import cardGame.mgr.Manageable;
 import cardGame.game.components.WoodButton;
+import cardGame.game.config.GameWindowLayout;
+import cardGame.game.ui.GameIconButtonFactory;
+import cardGame.game.ui.GameImagePanel;
+import cardGame.game.ui.InGameScoreBox;
+import cardGame.game.ui.MatchedScorePanel;
 import cardGame.mgr.Manager;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.Timer;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
 import static cardGame.game.GameController.*;
 
+/**
+ * 인게임 화면과 카드 매칭 흐름을 담당하는 메인 패널입니다.
+ * Main panel responsible for the in-game screen and card matching flow.
+ */
 public class GameWindow extends JPanel {
     private GameController gameController;
     private User loginedUser;
@@ -61,62 +67,38 @@ public class GameWindow extends JPanel {
         this.currentLevel = level;
 
         setLayout(new BorderLayout());
-        // setupGame() is called once from GameController.
-        // Calling it here as well created two game panels and restarted Casino.wav immediately,
-        // which caused the in-game BGM to stutter at the beginning.
+        
+        
+        
     }
 
+    /**
+     * 인게임 UI를 생성하고 카드 보드, 점수 패널, 사운드를 초기화합니다.
+     * Builds the in-game UI and initializes the board, score panels, and sound.
+     */
     public JPanel setupGame() {
-        final int SCREEN_W = 1920;
-        final int SCREEN_H = 1080;
+        final int SCREEN_W = GameWindowLayout.SCREEN_W;
+        final int SCREEN_H = GameWindowLayout.SCREEN_H;
+        final int SIDE_PANEL_W = GameWindowLayout.SIDE_PANEL_W;
+        final int SIDE_PANEL_H = GameWindowLayout.SIDE_PANEL_H;
+        final int SIDE_PANEL_Y = GameWindowLayout.SIDE_PANEL_Y;
+        final int RIGHT_PANEL_X = GameWindowLayout.RIGHT_PANEL_X;
+        final int TITLE_W = GameWindowLayout.TITLE_W;
+        final int TITLE_H = GameWindowLayout.TITLE_H;
+        final int TITLE_X = GameWindowLayout.TITLE_X;
+        final int TITLE_Y = GameWindowLayout.TITLE_Y;
+        final int BOARD_BG_W = GameWindowLayout.BOARD_BG_W;
+        final int BOARD_BG_H = GameWindowLayout.BOARD_BG_H;
+        final int BOARD_BG_X = GameWindowLayout.BOARD_BG_X;
+        final int BOARD_BG_Y = GameWindowLayout.BOARD_BG_Y;
 
-        final int LEFT_MARGIN = 200;
-        final int SIDE_PANEL_W = 200;
-        final int SIDE_PANEL_H = 800; //700
-        final int SIDE_PANEL_Y = 215; //155
-        final int RIGHT_PANEL_X = SCREEN_W - SIDE_PANEL_W - LEFT_MARGIN;
-
-        final int TITLE_W = 600;
-        final int TITLE_H = 270;//170
-        final int TITLE_X = (SCREEN_W - TITLE_W) / 2;
-        final int TITLE_Y = 0;
-
-        final int BOARD_BG_W = 900;
-        final int BOARD_BG_H = 800;
-        final int BOARD_BG_X = (SCREEN_W - BOARD_BG_W) / 2;
-        final int BOARD_BG_Y = 215;
-
-        JPanel mainPanel = new JPanel() {
-            private BufferedImage bgImage;
-            {
-                try {
-                    java.net.URL url = getClass().getResource(FrontImagePath + "/background.png");
-                    if (url != null) {
-                        bgImage = ImageIO.read(url);
-                    }
-                } catch (Exception e) {
-                    System.err.println("배경 이미지 로드 실패: " + e.getMessage());
-                }
-            }
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (bgImage != null) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-                    g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), null);
-                    g2.dispose();
-                }
-            }
-        };
+        JPanel mainPanel = new GameImagePanel("/background.png");
         mainPanel.setLayout(null);
         mainPanel.setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
 
-        // 상단 좌측 버튼들: 홈 / 사운드 / 리셋
-        // Top-left buttons: home / sound / reset
-        JButton homeButton = createNavButton("/homeBtn.png", 60);
+        
+        
+        JButton homeButton = GameIconButtonFactory.create("/homeBtn.png", 60);
         homeButton.setBounds(200, 140, 80, 80);
         homeButton.addActionListener(e -> {
             btnClickSound.play("BtnClick.wav", false, -10.0f);
@@ -133,7 +115,7 @@ public class GameWindow extends JPanel {
         });
         mainPanel.add(homeButton);
 
-        JButton muteButton = createNavButton("/soundBtn.png", 60);
+        JButton muteButton = GameIconButtonFactory.create("/soundBtn.png", 60);
         muteButton.setBounds(260, 140, 80, 80);
         muteButton.addActionListener(e -> {
             btnClickSound.play("BtnClick.wav", false, -10.0f);
@@ -141,11 +123,11 @@ public class GameWindow extends JPanel {
             if (backBGM != null) {
                 backBGM.setMute(isMuted);
             }
-            setNavButtonIcon(muteButton, isMuted ? "/soundBtn_mute.png" : "/soundBtn.png", 60);
+            GameIconButtonFactory.setIcon(muteButton, isMuted ? "/soundBtn_mute.png" : "/soundBtn.png", 60);
         });
         mainPanel.add(muteButton);
 
-        JButton resetButton = createNavButton("/backBtn.png", 60);
+        JButton resetButton = GameIconButtonFactory.create("/backBtn.png", 60);
         resetButton.setBounds(320, 140, 80, 80);
         resetButton.addActionListener(e -> {
             btnClickSound.play("BtnClick.wav", false, -10.0f);
@@ -153,8 +135,8 @@ public class GameWindow extends JPanel {
         });
         mainPanel.add(resetButton);
 
-        // 상단 중앙 JuicyMatch 간판
-        // Top-center JuicyMatch signboard
+        
+        
         JLabel titleLabel = new JLabel();
         try {
             java.net.URL titleUrl = getClass().getResource(FrontImagePath + "/ingame_title.png");
@@ -173,51 +155,37 @@ public class GameWindow extends JPanel {
         titleLabel.setBounds(TITLE_X, TITLE_Y, TITLE_W, TITLE_H);
         mainPanel.add(titleLabel);
 
-        // 오른쪽 상단 플레이어 스코어 박스 (ingame_score.png)
-        // Top-right player score box (ingame_score.png)
-        JPanel userScoreBox = createPlayerScoreBox();
+        
+        
+        InGameScoreBox userScoreBox = new InGameScoreBox();
+        userScoreLabel = userScoreBox.getScoreLabel();
         userScoreBox.setBounds(RIGHT_PANEL_X - 25, 140, 250, 70);
         mainPanel.add(userScoreBox);
 
-        // 좌우 세로 패널
-        // Left/right vertical panels
-        JPanel computerScorePanel = createScorePanel("CPU Lv." + currentLevel, false, SIDE_PANEL_W, SIDE_PANEL_H);
-        computerScorePanel.setBounds(LEFT_MARGIN, SIDE_PANEL_Y, SIDE_PANEL_W, SIDE_PANEL_H);
+        
+        
+        MatchedScorePanel computerScorePanel = new MatchedScorePanel("CPU Lv." + currentLevel, false, SIDE_PANEL_W, SIDE_PANEL_H, () -> {});
+        computerPanel = computerScorePanel.getMatchedCardsArea();
+        computerScorePanel.setBounds(GameWindowLayout.LEFT_MARGIN, SIDE_PANEL_Y, SIDE_PANEL_W, SIDE_PANEL_H);
         mainPanel.add(computerScorePanel);
 
         String userName = (loginedUser != null && loginedUser.getName() != null && !loginedUser.getName().isBlank())
                 ? loginedUser.getName() : "PLAYER";
-        JPanel userScorePanel = createScorePanel(userName, true, SIDE_PANEL_W, SIDE_PANEL_H);
+        MatchedScorePanel userScorePanel = new MatchedScorePanel(userName, true, SIDE_PANEL_W, SIDE_PANEL_H, () -> {
+            if (!isProcessing && userTurn) {
+                bonusButton.setEnabled(false);
+                bonusButton.setButtonText("使用済み");
+                useBonusItem();
+            }
+        });
+        userCardPanel = userScorePanel.getMatchedCardsArea();
+        bonusButton = userScorePanel.getBonusButton();
         userScorePanel.setBounds(RIGHT_PANEL_X, SIDE_PANEL_Y, SIDE_PANEL_W, SIDE_PANEL_H);
         mainPanel.add(userScorePanel);
 
-        // 카드 보드 배경
-        // Card board background
-        JPanel cardBoardBg = new JPanel() {
-            private BufferedImage bgImage;
-            {
-                try {
-                    java.net.URL url = getClass().getResource(FrontImagePath + "/ingame_cardboard_bg.png");
-                    if (url != null) {
-                        bgImage = ImageIO.read(url);
-                    }
-                } catch (Exception e) {
-                    System.err.println("카드보드 배경 로드 실패: " + e.getMessage());
-                }
-            }
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (bgImage != null) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-                    g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), null);
-                    g2.dispose();
-                }
-            }
-        };
+        
+        
+        JPanel cardBoardBg = new GameImagePanel("/ingame_cardboard_bg.png");
         cardBoardBg.setOpaque(false);
         cardBoardBg.setLayout(null);
         cardBoardBg.setBounds(BOARD_BG_X, BOARD_BG_Y, BOARD_BG_W, BOARD_BG_H);
@@ -242,16 +210,16 @@ public class GameWindow extends JPanel {
         this.layeredPane = new JLayeredPane();
         this.layeredPane.setBounds(BOARD_BG_X, BOARD_BG_Y, BOARD_BG_W, BOARD_BG_H);
 
-        // 남은 카드 수 - 텍스트만 사용
-        // Remaining card count - text only
+        
+        
         cardCountLabel = new JLabel("残りカード:" + (board != null ? board.getCardCnt() : 0));
         cardCountLabel.setFont(new Font("Yu Gothic UI", Font.BOLD, 28));
         cardCountLabel.setForeground(new Color(255, 250, 240));
         cardCountLabel.setBounds(BOARD_BG_X + 20, BOARD_BG_Y - 30, 330, 40);
         mainPanel.add(cardCountLabel);
 
-        // 기존 로직 호환용 참조
-        // References for legacy logic compatibility
+        
+        
         this.userPanel = userScorePanel;
 
         updateStatus();
@@ -265,225 +233,9 @@ public class GameWindow extends JPanel {
         return mainPanel;
     }
 
-    /**
-     * 좌/우 세로 점수 패널 생성
-     * Create left/right vertical score panel
-     */
-    private JPanel createScorePanel(String playerName, boolean isUser, int panelW, int panelH) {
-        JPanel panel = new JPanel() {
-            private BufferedImage bgImage;
-            {
-                try {
-                    java.net.URL url = getClass().getResource(FrontImagePath + "/ingame_sorce_panel.png");
-                    if (url != null) {
-                        bgImage = ImageIO.read(url);
-                    }
-                } catch (Exception e) {
-                    System.err.println("점수 패널 배경 로드 실패: " + e.getMessage());
-                }
-            }
+    
 
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2 = (Graphics2D) g.create();
-                if (bgImage != null) {
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-                    g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), null);
-                }
 
-                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                g2.setFont(new Font("Yu Gothic UI", Font.BOLD, 26));
-                drawCenteredOutlinedText(g2, playerName, getWidth() / 2, 62,
-                        new Color(255, 219, 64), new Color(70, 35, 8));
-                g2.dispose();
-            }
-        };
-        panel.setOpaque(false);
-        panel.setLayout(null);
-
-        JPanel matchedCardsArea = new JPanel(new GridLayout(0, 2, 5, 5));
-        matchedCardsArea.setOpaque(false);
-
-        if (isUser) {
-            matchedCardsArea.setBounds(22, 90, 156, 495);
-            this.userCardPanel = matchedCardsArea;
-            this.userPanel = panel;
-        } else {
-            matchedCardsArea.setBounds(22, 90, 156, 575);
-            this.computerPanel = matchedCardsArea;
-        }
-        panel.add(matchedCardsArea);
-
-        if (isUser) {
-            bonusButton = new WoodButton("BONUS", 156, 50);
-            bonusButton.setBounds(22, panelH - 78, 156, 50);
-            bonusButton.addActionListener(e -> {
-                if (!isProcessing && userTurn) {
-                    bonusButton.setEnabled(false);
-                    bonusButton.setButtonText("使用済み");
-                    useBonusItem();
-                }
-            });
-            panel.add(bonusButton);
-        }
-
-        return panel;
-    }
-
-    /**
-     * 플레이어용 상단 점수 박스 (ingame_score.png)
-     */
-    private JPanel createPlayerScoreBox() {
-        JPanel panel = new JPanel() {
-            private BufferedImage bgImage;
-            {
-                try {
-                    java.net.URL url = getClass().getResource(FrontImagePath + "/ingame_score.png");
-                    if (url != null) {
-                        bgImage = ImageIO.read(url);
-                    }
-                } catch (Exception e) {
-                    System.err.println("점수 박스 배경 로드 실패: " + e.getMessage());
-                }
-            }
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (bgImage != null) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-                    g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), null);
-                    g2.dispose();
-                }
-            }
-        };
-        panel.setOpaque(false);
-        panel.setLayout(null);
-
-        userScoreLabel = new JLabel("スコア:0", SwingConstants.CENTER);
-        userScoreLabel.setFont(new Font("Yu Gothic UI", Font.BOLD, 23));
-        userScoreLabel.setForeground(new Color(255, 250, 240));
-        userScoreLabel.setBounds(0, 0, 250, 70);
-        panel.add(userScoreLabel);
-        return panel;
-    }
-
-    private void drawCenteredOutlinedText(Graphics2D g2, String text, int centerX, int y,
-                                          Color fill, Color outline) {
-        FontMetrics fm = g2.getFontMetrics();
-        int x = centerX - fm.stringWidth(text) / 2;
-        g2.setColor(outline);
-        g2.drawString(text, x - 2, y);
-        g2.drawString(text, x + 2, y);
-        g2.drawString(text, x, y - 2);
-        g2.drawString(text, x, y + 2);
-        g2.setColor(fill);
-        g2.drawString(text, x, y);
-    }
-
-    private JButton createNavButton(String path, int size) {
-        JButton btn = new JButton();
-        setNavButtonIcon(btn, path, size);
-        btn.setPreferredSize(new Dimension(50, 50));
-        // 버튼 자체는 불투명 (배경 투명) - 이미지가 선명하게 보이도록
-        // Button itself is opaque (transparent background) - icon shows clearly
-        btn.setOpaque(false);
-        btn.setContentAreaFilled(false);
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        // 호버 시 반투명 효과 비활성화
-        // Disable hover translucent effect
-        btn.setRolloverEnabled(false);
-        return btn;
-    }
-
-    private void setNavButtonIcon(JButton btn, String path, int size) {
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(FrontImagePath + path));
-            Image img = icon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
-            btn.setIcon(new ImageIcon(img));
-            btn.setText(null);
-        } catch (Exception e) {
-            btn.setIcon(null);
-            btn.setText(path.replace("/", "").replace(".png", ""));
-            System.err.println("이미지 로드 실패: " + path);
-        }
-    }
-
-    public void gameFinished(int finalScore) {
-        if (this.loginedUser == null) {
-            System.out.println("ログイン情報がないため、記録を保存できません.");
-            return;
-        }
-
-        Record newRecord = new Record(this.loginedUser, finalScore, currentLevel);
-        RecordDAO recordDAO = new RecordDAO();
-        boolean success = recordDAO.insertRecord(newRecord);
-
-        if (success) {
-            recordMgr.addMList(newRecord);
-            System.out.println("記録がDBとリストに正常に保存されました.");
-        }
-    }
-
-    private JScrollPane getjScrollPane(Map<String, List<Integer>> gameRecords) {
-        for (Manageable m : recordMgr.mList) {
-            Record record = (Record) m;
-            int score = record.getScore();
-            String id = record.getUser().getUsername();
-            gameRecords.computeIfAbsent(id, k -> new ArrayList<>()).add(score);
-        }
-
-        List<Map.Entry<String, Integer>> totalScores = new ArrayList<>();
-        for (Map.Entry<String, List<Integer>> entry : gameRecords.entrySet()) {
-            String id = entry.getKey();
-            List<Integer> scores = entry.getValue();
-            int totalScore = scores.stream().mapToInt(Integer::intValue).sum();
-            totalScores.add(new AbstractMap.SimpleEntry<>(id, totalScore));
-        }
-
-        totalScores.sort((entry1, entry2) -> Integer.compare(entry2.getValue(), entry1.getValue()));
-
-        String[] columnNames = {"등수", "사용자", "총점"};
-        Object[][] rowData = new Object[totalScores.size()][3];
-
-        int idx = 1;
-        for (int i = 0; i < totalScores.size(); i++) {
-            Map.Entry<String, Integer> entry = totalScores.get(i);
-            rowData[i][0] = idx++;
-            rowData[i][1] = entry.getKey();
-            rowData[i][2] = entry.getValue();
-        }
-
-        JTable recordTable = new JTable(rowData, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        recordTable.setFillsViewportHeight(true);
-        recordTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        recordTable.getTableHeader().setReorderingAllowed(false);
-
-        recordTable.setFont(new Font("Yu Gothic UI", Font.BOLD, 16));
-        recordTable.getTableHeader().setFont(new Font("Yu Gothic UI", Font.BOLD, 18));
-
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int i = 0; i < recordTable.getColumnCount(); i++) {
-            recordTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-        }
-
-        JScrollPane scrollPane = new JScrollPane(recordTable);
-        scrollPane.setPreferredSize(new Dimension(600, 400));
-        return scrollPane;
-    }
 
     private void addCardToUserArea(Card card) {
         ImageIcon icon = card.getMatchedImageIcon();
@@ -506,49 +258,6 @@ public class GameWindow extends JPanel {
         computerPanel.add(label);
         computerPanel.revalidate();
         computerPanel.repaint();
-    }
-
-    private JPanel createItemPanel() {
-        JButton itemButton = new JButton("BONUS");
-        itemButton.setFont(new Font("Yu Gothic UI", Font.BOLD, 20));
-        itemButton.setBackground(new Color(212, 232, 228));
-
-        itemButton.addActionListener(e -> {
-            if (!isProcessing && userTurn) {
-                itemButton.setEnabled(false);
-                itemButton.setText("사용 완료");
-                itemButton.setBackground(Color.GRAY);
-
-                useBonusItem();
-            }
-        });
-
-        JPanel itemPanel = new JPanel(new BorderLayout());
-        itemPanel.setPreferredSize(new Dimension(220, 60));
-        itemPanel.setBackground(new Color(153, 102, 51));
-        itemPanel.add(itemButton, BorderLayout.CENTER);
-        itemPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
-        return itemPanel;
-    }
-
-    private JPanel createBlackPanel(Dimension size) {
-        JPanel panel = new JPanel();
-        panel.setBackground(new Color(245, 245, 235));
-        panel.setPreferredSize(size);
-        panel.setMinimumSize(size);
-        panel.setMaximumSize(size);
-        return panel;
-    }
-
-    public void reSetupCardListeners(){
-        for (Card card : board.getCards()) {
-            card.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    handleCardClick(card);
-                }
-            });
-        }
     }
 
     public void setupCardListeners() {
@@ -628,6 +337,10 @@ public class GameWindow extends JPanel {
         player1.incrementCount();
     }
 
+    /**
+     * 선택된 두 카드의 일치 여부를 판정하고 턴, 점수, 콤보를 갱신합니다.
+     * Checks whether two selected cards match and updates turn, score, and combo state.
+     */
     private void checkMatch() {
         if (selectedCards.size() < 2) return;
 
@@ -668,13 +381,7 @@ public class GameWindow extends JPanel {
             board.getBoardContainer().repaint();
             checkGameEnd();
 
-            if (!userTurn && !board.isAllMatched()) {
-                Timer t = new Timer(400, e -> computerTurn());
-                t.setRepeats(false);
-                t.start();
-            }
-
-        } else {
+} else {
             isProcessing = true;
 
             Timer flipBackTimer = new Timer(300, e -> {
@@ -702,55 +409,6 @@ public class GameWindow extends JPanel {
             flipBackTimer.setRepeats(false);
             flipBackTimer.start();
         }
-    }
-
-    private void processMatch(Card firstCard, Card secondCard) {
-        firstCard.match(userTurn);
-        secondCard.match(userTurn);
-
-        if (userTurn) {
-            continueSuccess(loginedUser, computer, firstCard);
-            success.play("success_match.wav", false, -10.0f);
-        } else {
-            continueSuccess(computer, loginedUser, firstCard);
-            success.play("success_match.wav", false, -10.0f);
-        }
-
-        board.removeCard(firstCard);
-        board.removeCard(secondCard);
-
-        updateCombo(true);
-        selectedCards.clear();
-        checkGameEnd();
-
-        if (!userTurn) {
-            computerTurn();
-        }
-    }
-
-    private void processMismatch(Card firstCard, Card secondCard) {
-        loginedUser.resetCount();
-        computer.resetCount();
-
-        Timer timer = new Timer(1000, e -> {
-            if (!firstCard.isMatched())
-                firstCard.hide();
-            if (!secondCard.isMatched())
-                secondCard.hide();
-
-            selectedCards.clear();
-            userTurn = !userTurn;
-            updateCombo(false);
-            updateStatus();
-
-            if (!userTurn) {
-                Timer computerTurnTimer = new Timer(1250, event -> computerTurn());
-                computerTurnTimer.setRepeats(false);
-                computerTurnTimer.start();
-            }
-        });
-        timer.setRepeats(false);
-        timer.start();
     }
 
     private void updateStatus() {
@@ -791,17 +449,10 @@ public class GameWindow extends JPanel {
         }
     }
 
-    private boolean isAllMatched() {
-        boolean allMatched = true;
-        for (Card card : board.getCards()) {
-            if (!card.isMatched()) {
-                allMatched = false;
-                break;
-            }
-        }
-        return allMatched;
-    }
-
+    /**
+     * CPU 난이도에 맞춰 기억한 카드 또는 무작위 카드 두 장을 선택합니다.
+     * Selects two cards for the CPU using memory by level or random choice.
+     */
     private void computerTurn() {
         if (userTurn || board.isAllMatched() || isProcessing) return;
 
@@ -883,19 +534,6 @@ public class GameWindow extends JPanel {
         }
     }
 
-    private String createCombinationKey(Card card1, Card card2) {
-        int id1 = card1.getNumber();
-        int id2 = card2.getNumber();
-        return id1 < id2 ? id1 + "," + id2 : id2 + "," + id1;
-    }
-
-    private void initComboLabel() {
-        comboLabel.setFont(new Font("Serif", Font.BOLD, 60));
-        comboLabel.setForeground(new Color(255, 127, 0));
-        comboLabel.setVisible(false);
-        add(comboLabel, BorderLayout.NORTH);
-    }
-
     private void updateCombo(boolean success) {
         if (success) {
             comboCount++;
@@ -918,6 +556,10 @@ public class GameWindow extends JPanel {
         comboTimer.start();
     }
 
+    /**
+     * 현재 게임 상태를 초기화하고 같은 화면에서 새 게임을 시작합니다.
+     * Resets the current game state and starts a new game on the same screen.
+     */
     private void resetGame() {
         btnClickSound.stopItemSound();
         Object[] options = {"はい", "いいえ"};
@@ -996,6 +638,10 @@ public class GameWindow extends JPanel {
         }
     }
 
+    /**
+     * 보너스 버튼 사용 시 일정 시간 동안 남은 카드를 모두 공개합니다.
+     * Reveals all remaining cards for a short time when the bonus button is used.
+     */
     private void useBonusItem() {
         btnClickSound.play("BtnClick.wav", false, -10.0f);
 

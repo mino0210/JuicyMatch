@@ -15,9 +15,9 @@ import java.io.IOException;
 
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
-/**
- * 메인 메뉴 화면 - 이미지 기반 UI / Main menu screen - Image-based UI
- */
+
+
+
 public class GameMenuPanel extends JPanel {
     private WoodButton startBtn;
     private WoodButton explanationBtn;
@@ -29,7 +29,7 @@ public class GameMenuPanel extends JPanel {
     private Sound sound = new Sound();
 
     public static User loginedUser;
-    // Mainmusic.wav is managed by GameController so it can continue across menu/select screens.
+    
 
     private BufferedImage logoImage;
 
@@ -66,27 +66,27 @@ public class GameMenuPanel extends JPanel {
 
         gameController.playMenuBGM();
 
-        // 위치 조정용 설정값
-        // =========================
-        // =========================
+        
+        
+        
         int logoW = 700;
         int logoH = 300;
         int logoX = (SCREEN_W - logoW) / 2;
 
-        // 로고 y축 위치: 로고만 위/아래로 움직이고 싶으면 여기 수정
-        // Logo Y position: modify here to move only the logo up/down
+        
+        
         int logoY = 165;
 
         int btnW = 400;
         int btnH = 86;
         int btnX = (SCREEN_W - btnW) / 2;
 
-        // 버튼 묶음 시작 y축: 버튼 전체를 위/아래로 움직이고 싶으면 여기 수정
-        // Button group start Y: modify here to move all buttons up/down
+        
+        
         int firstBtnY = 460;
 
-        // 버튼 간 y축 간격: 버튼 사이 간격을 조절하고 싶으면 여기 수정
-        // Button Y gap: modify here to adjust spacing between buttons
+        
+        
         int gapY = 100;
 
         JPanel logoPanel = new JPanel() {
@@ -116,14 +116,19 @@ public class GameMenuPanel extends JPanel {
         logoutBtn = new WoodButton("ログアウト");
         exitBtn = new WoodButton("終了");
 
-        // 버튼 슬롯 위치 고정
-        // =========================
-        // =========================
-        int slot1Y = firstBtnY;              // ログイン / ゲームスタート
-        int slot2Y = firstBtnY + gapY;       // ログアウト 자리
-        int slot3Y = firstBtnY + gapY * 2;   // きろく
-        int slot4Y = firstBtnY + gapY * 3;   // 遊び方
-        int slot5Y = firstBtnY + gapY * 4;   // 終了
+        
+        
+        
+        int slot1Y = firstBtnY;              
+        
+        int slot2Y = firstBtnY + gapY;       
+        
+        int slot3Y = firstBtnY + gapY * 2;   
+        
+        int slot4Y = firstBtnY + gapY * 3;   
+        
+        int slot5Y = firstBtnY + gapY * 4;   
+        
 
         startBtn.setBounds(btnX, slot1Y, btnW, btnH);
         loginBtn.setBounds(btnX, slot1Y, btnW, btnH);
@@ -136,16 +141,18 @@ public class GameMenuPanel extends JPanel {
         boolean isLoggedIn = (loginedUser != null);
 
         if (isLoggedIn) {
-            // 로그인 후:
-            // ゲームスタート / ログアウト / きろく / 遊び方
+            
+            
+            
             startBtn.setVisible(true);
             loginBtn.setVisible(false);
             logoutBtn.setVisible(true);
         } else {
-            // 로그인 전:
-            // Before login:
-            // ログイン / 공백 / きろく / 遊び方
-            // Login / Empty / Records / How to play
+            
+            
+            
+            
+            
             startBtn.setVisible(false);
             loginBtn.setVisible(true);
             logoutBtn.setVisible(false);

@@ -11,6 +11,10 @@ import cardGame.mgr.Manager;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 화면 전환과 게임 시작 흐름을 관리하는 메인 컨트롤러입니다.
+ * Main controller that manages screen transitions and game start flow.
+ */
 public class GameController extends JFrame {
     private GameManager gameManager;
     public static Manager userMgr = new Manager();
@@ -43,6 +47,10 @@ public class GameController extends JFrame {
         menuBGM.stop();
     }
 
+    /**
+     * 요청된 화면 이름에 따라 현재 패널을 교체합니다.
+     * Replaces the current panel based on the requested screen name.
+     */
     public void switchToPanel(String panelName, User user) {
         if (user != null) {
             this.loginedUser = user;
@@ -89,8 +97,8 @@ public class GameController extends JFrame {
 
         if (panelName.equals("startGame")) {
             stopMenuBGM();
-            // [변경] 모든 레벨이 4x5 보드 사용, level 변수로 직접 판단
-            // [Changed] All levels use 4x5, use level variable directly
+            
+            
             int levelNum = GameController.level;
             if (levelNum < 1 || levelNum > 3) levelNum = 1;
 
@@ -164,10 +172,10 @@ public class GameController extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        /*
-         * 1920x1080 좌표계를 그대로 쓰기 위해 타이틀바 제거.
-         * 반드시 setVisible(true)보다 먼저 호출해야 함.
-         */
+        
+
+
+
         setUndecorated(true);
 
         gameManager = new GameManager(recordMgr);

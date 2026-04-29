@@ -12,24 +12,24 @@ public class Record implements Manageable {
 
     public Record() {}
 
-    // [추가] 1. GameController 등 기존 코드 호환용 (에러 해결의 핵심!)
-    // [Added] 1. For legacy code compatibility (e.g. GameController)
+    
+    
     public Record(User user, int score) {
         this.user = user;
         this.score = score;
-        this.level = 1; // 레벨이 안 넘어오면 기본값 1 저장
+        this.level = 1; 
     }
 
-    // 2. 레벨 정보까지 확실히 저장할 때 (GameWindow용)
-    // 2. When also saving level info (for GameWindow)
+    
+    
     public Record(User user, int score, int level) {
         this.user = user;
         this.score = score;
         this.level = level;
     }
 
-    // 3. DB에서 불러올 때 (RecordDAO용)
-    // 3. When loading from DB (for RecordDAO)
+    
+    
     public Record(int recordId, User user, int score, String playTime, int level) {
         this.recordId = recordId;
         this.user = user;
@@ -38,7 +38,7 @@ public class Record implements Manageable {
         this.level = level;
     }
 
-    // Getter & Setter
+    
     public int getRecordId() { return recordId; }
     public void setRecordId(int recordId) { this.recordId = recordId; }
     public int getScore() { return score; }
@@ -50,8 +50,8 @@ public class Record implements Manageable {
     public int getLevel() { return level; }
     public void setLevel(int level) { this.level = level; }
     
-    // 사용자 ID 반환 (편의 메서드)
-    // Get user ID (convenience method)
+    
+    
     public String getUserId() {
         return user != null ? user.getUserId() : null;
     }

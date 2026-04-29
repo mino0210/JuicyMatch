@@ -14,10 +14,10 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * 회원가입 화면 - 이미지 기반 UI / Join screen - Image-based UI
- * User 클래스 필드: username(ID), password(PW), nickname(별명), gender(성별)
- */
+
+
+
+
 public class JoinForm extends JPanel {
     private User loginedUser;
     private GameController gameController;
@@ -26,47 +26,47 @@ public class JoinForm extends JPanel {
 
     private Sound sound = new Sound();
 
-    // 화면 기준값
-    // =========================
-    // =========================
+    
+    
+    
     private static final int SCREEN_W = 1920;
     private static final int SCREEN_H = 1080;
 
-    // 회원가입 패널 크기/위치
-    // =========================
-    // =========================
+    
+    
+    
     private static final int JOIN_PANEL_W = 800;
     private static final int JOIN_PANEL_H = 600;
 
     private static final int JOIN_PANEL_Y = 240;
     private static final int JOIN_PANEL_X = (SCREEN_W - JOIN_PANEL_W) / 2;
 
-    // 입력 영역 위치 조정값
-    // =========================
-    // =========================
+    
+    
+    
     private static final int INPUT_GROUP_SHIFT_Y = 15;
     private static final int INPUT_GROUP_SHIFT_X = 0;
 
-    // 버튼 위치 조정값
-    // =========================
-    // =========================
+    
+    
+    
     private static final int BUTTON_GROUP_SHIFT_Y = 0;
     private static final int BUTTON_GROUP_SHIFT_X = 0;
 
-    // 입력 필드 내부 텍스트 시작 위치 조정값
-    // =========================
-    // =========================
-    /*
-     * 입력한 글자가 입력란보다 왼쪽에서 시작하면 이 값을 키우세요.
-     * Increase this value if entered text starts to the left of the input field.
-     *
-     * 35 = 조금 오른쪽
-     * 35 = slightly right
-     * 45 = 추천값
-     * 45 = recommended value
-     * 55 = 더 오른쪽
-     * 55 = more to the right
-     */
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
     private static final int FIELD_TEXT_PADDING_TOP = 5;
     private static final int FIELD_TEXT_PADDING_LEFT = 30;
     private static final int FIELD_TEXT_PADDING_BOTTOM = 5;
@@ -118,9 +118,9 @@ public class JoinForm extends JPanel {
         Font fieldFont = createFont(18, Font.BOLD);
         Color labelColor = new Color(255, 250, 240);
 
-        // 입력 영역 기본 좌표
-        // =========================
-        // =========================
+        
+        
+        
         int labelX = 160 + INPUT_GROUP_SHIFT_X;
         int fieldX = 300 + INPUT_GROUP_SHIFT_X;
 

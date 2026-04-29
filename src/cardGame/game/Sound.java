@@ -6,28 +6,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-/**
- * 사운드 재생 클래스 - 안전성 강화 + 동기화 버전
- * Audio playback class - Enhanced safety + synchronized version
- */
+
+
+
+
 public class Sound {
 	private Clip clip;
 	private Clip itemClip;
 	private FloatControl gainControl;
 	private float previousVolume = -20.0f;
 	
-	// [중요] 클래스 레벨 락 - AudioSystem 동시 호출 방지
-	// Class-level lock to prevent concurrent AudioSystem calls
+	
+	
 	private static final Object AUDIO_LOCK = new Object();
 
-	/**
-	 * 사운드 재생 / Play sound
-	 */
+	
+
+
 	public void play(String fileName, boolean loop, float volume) {
 		synchronized (AUDIO_LOCK) {
 			try {
-				// [중요] 이전 Clip 완전 정리
-				// Fully clean up previous clip
+				
+				
 				cleanupClip();
 
 				URL url = getClass().getResource("/cardGame/sound/" + fileName);
@@ -36,20 +36,20 @@ public class Sound {
 					return;
 				}
 
-				// BufferedInputStream으로 감싸기 (mark/reset 지원)
-				// Wrap with BufferedInputStream (supports mark/reset)
+				
+				
 				try (InputStream rawStream = url.openStream();
 					 BufferedInputStream bufferedStream = new BufferedInputStream(rawStream);
 					 AudioInputStream ais = AudioSystem.getAudioInputStream(bufferedStream)) {
 					
 					AudioFormat baseFormat = ais.getFormat();
 					
-					// 호환되지 않는 포맷이면 표준 포맷으로 변환
-					// Convert to standard format if incompatible
+					
+					
 					AudioFormat targetFormat;
 					if (baseFormat.getSampleRate() <= 0 || baseFormat.isBigEndian()) {
-						// 비표준 포맷 → 표준 포맷으로 변환
-						// Non-standard format -> convert to standard format
+						
+						
 						targetFormat = new AudioFormat(
 							AudioFormat.Encoding.PCM_SIGNED,
 							44100, 16, baseFormat.getChannels(),
@@ -81,14 +81,22 @@ public class Sound {
 			} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
 				System.err.println("사운드 재생 실패 [" + fileName + "]: " + e.getMessage());
 			} catch (Exception e) {
-				System.err.println("예기치 못한 사운드 오류 [" + fileName + "]: " + e.getMessage());
+				// 사운드 재생 실패 시 게임 진행은 유지합니다.
+				// Keeps the game running even if sound playback fails.
+				// 개발 중 자세히 보고 싶을 때만 true로 변경
+				// Set to true only when detailed sound debugging is needed.
+				final boolean DEBUG_SOUND = false;
+
+				if (DEBUG_SOUND) {
+					System.err.println("사운드 재생 실패 [" + fileName + "]: " + e.getMessage());
+				}
 			}
 		}
 	}
 
-	/**
-	 * 아이템 사운드 재생 / Play item sound
-	 */
+	
+
+
 	public void playItemSound(String fileName, float volume) {
 		synchronized (AUDIO_LOCK) {
 			try {
@@ -116,9 +124,9 @@ public class Sound {
 		}
 	}
 
-	/**
-	 * Clip 안전하게 정리 / Safely cleanup clip
-	 */
+	
+
+
 	private void cleanupClip() {
 		if (clip != null) {
 			try {

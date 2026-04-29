@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Board {
-    // 최종 인게임 UI에 맞춰 카드 크기/간격 재조정
-    // Card size/gap adjusted for final in-game UI
+    
+    
     private static final int CARD_W = 136;
     private static final int CARD_H = 170;
     private static final int CARD_GAP_X = 24;
