@@ -1,22 +1,26 @@
-# IDE
+# IDE - IntelliJ IDEA
 .idea/
 *.iml
+
+# IDE - Eclipse
 .settings/
-classes/
-
-# Build
-bin/
-
-# Eclipse
 .project
 .classpath
 
-# DB config
+# Build outputs
+bin/
+classes/
+out/
+target/
+build/
+*.class
+
+# Local DB config
 src/db.properties
 
 # Logs
 *.log
 
-# OS
+# OS generated files
 .DS_Store
-Thumbs.dbsrc/db.properties 
+Thumbs.db

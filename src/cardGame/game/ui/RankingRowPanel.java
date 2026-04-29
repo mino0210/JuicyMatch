@@ -244,7 +244,7 @@ public class RankingRowPanel extends JPanel {
         g2.setFont(createFont(18, Font.BOLD));
         GameTextPainter.drawOutlinedText(g2, "Lv." + level, x + 18, y - 4, new Color(255, 250, 240), new Color(45, 24, 10));
         g2.setFont(createFont(22, Font.BOLD));
-        GameTextPainter.drawOutlinedText(g2, "そうてん: " + total + " pt", x + 130, y, new Color(255, 250, 240), new Color(45, 24, 10));
+        GameTextPainter.drawOutlinedText(g2, "そうごうてん: " + total + " pt", x + 130, y, new Color(255, 250, 240), new Color(45, 24, 10));
         GameTextPainter.drawOutlinedText(g2, "さいこうてん: " + best + " pt", x + 430, y, new Color(255, 215, 0), new Color(45, 24, 10));
         GameTextPainter.drawOutlinedText(g2, count + "かい", x + 780, y, new Color(255, 250, 240), new Color(45, 24, 10));
     }
