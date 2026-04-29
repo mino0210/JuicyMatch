@@ -1,5 +1,9 @@
 # External Libraries
 
-This folder contains external JAR dependencies required to run JuicyMatch.
+This directory contains external JAR dependencies required to run JuicyMatch.
 
-- MySQL Connector/J
+## Included
+
+- MySQL Connector/J 9.7.0
+
+The MySQL connector is used for JDBC-based database access.
