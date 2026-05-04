@@ -90,48 +90,48 @@
 
 ### ユーザー管理
 
-* 新規登録
-* ログイン
-* ニックネーム / 性別の保存
-* MySQLを用いたユーザー情報管理
+- 新規登録
+- ログイン
+- ニックネーム / 性別の保存
+- MySQLを用いたユーザー情報管理
 
 ### ゲーム進行
 
-* フルーツ / 野菜テーマの選択
-* Lv.1、Lv.2、Lv.3の難易度選択
-* ゲーム開始時のカード位置プレビュー
-* カード選択とペア判定
-* 残りカード数の表示
-* スコアのリアルタイム反映
+- フルーツ / 野菜テーマの選択
+- Lv.1、Lv.2、Lv.3の難易度選択
+- ゲーム開始時のカード位置プレビュー
+- カード選択とペア判定
+- 残りカード数の表示
+- スコアのリアルタイム反映
 
 ### スコア / ランキング
 
-* ペア成立時のスコア加算
-* 連続成功時のコンボボーナス
-* ゲーム終了後の記録保存
-* 全体ランキング表示
-* ユーザーごとのレベル別記録表示
+- ペア成立時のスコア加算
+- 連続成功時のコンボボーナス
+- ゲーム終了後の記録保存
+- 全体ランキング表示
+- ユーザーごとのレベル別記録表示
 
 ### UI / サウンド
 
-* Java SwingによるカスタムUI
-* 木目調のボタン・パネルデザイン
-* メインBGM / ゲーム中BGM
-* ボタンクリック音 / カード効果音 / 成功効果音
-* ミュートボタンとミュート状態の視覚表示
+- Java SwingによるカスタムUI
+- 木目調のボタン・パネルデザイン
+- メインBGM / ゲーム中BGM
+- ボタンクリック音 / カード効果音 / 成功効果音
+- ミュートボタンとミュート状態の視覚表示
 
 ---
 
 ## 🛠️ 技術スタック
 
-| 区分              | 使用技術                    |
-| --------------- | ----------------------- |
-| Language        | Java                    |
-| GUI             | Java Swing, Java AWT    |
-| Database        | MySQL                   |
-| DB Access       | JDBC, MySQL Connector/J |
-| IDE             | IntelliJ IDEA           |
-| Version Control | Git, GitHub             |
+| 区分 | 使用技術 |
+|---|---|
+| Language | Java |
+| GUI | Java Swing, Java AWT |
+| Database | MySQL |
+| DB Access | JDBC, MySQL Connector/J |
+| IDE | IntelliJ IDEA |
+| Version Control | Git, GitHub |
 
 ---
 
@@ -172,11 +172,9 @@ JuicyMatch/
 ### 1. リポジトリをクローン
 
 ```bash
-git clone https://github.com/ユーザー名/JuicyMatch.git
+git clone https://github.com/mino0210/JuicyMatch.git
 cd JuicyMatch
 ```
-
-> `ユーザー名` は自分のGitHubアカウント名に置き換えてください。
 
 ---
 
@@ -228,30 +226,28 @@ lib/mysql-connector-j-9.7.0.jar
 
 ---
 
-### 5. MySQLデータベースを作成
+### 5. MySQLデータベースとテーブルを作成
 
-MySQLに接続し、以下のSQLを実行します。
+このプロジェクトでは、MySQLを使用してユーザー情報とゲーム記録を管理しています。  
+そのため、`card_game_db` データベースだけでなく、`users` テーブルと `game_records` テーブルも必ず作成する必要があります。
+
+MySQLに接続し、以下のSQLを実行してください。
 
 ```sql
-CREATE DATABASE card_game_db;
+CREATE DATABASE IF NOT EXISTS card_game_db
+DEFAULT CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
 USE card_game_db;
-```
 
----
-
-### 6. テーブルを作成
-
-以下のSQLを実行します。
-
-```sql
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) PRIMARY KEY,
     password VARCHAR(100) NOT NULL,
     nickname VARCHAR(50) NOT NULL,
     gender VARCHAR(10) NOT NULL
 );
 
-CREATE TABLE game_records (
+CREATE TABLE IF NOT EXISTS game_records (
     record_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     score INT NOT NULL,
@@ -264,9 +260,25 @@ CREATE TABLE game_records (
 );
 ```
 
+作成後、以下のSQLでテーブルが正しく作成されているか確認できます。
+
+```sql
+SHOW TABLES;
+```
+
+以下の2つが表示されれば、DBの準備は完了です。
+
+```text
+users
+game_records
+```
+
+> `CREATE DATABASE card_game_db;` だけではゲームは正常に動作しません。  
+> 新規登録・ログイン・ランキング機能を使用するためには、必ず `users` と `game_records` テーブルを作成してください。
+
 ---
 
-### 7. DB設定ファイルを作成
+### 6. DB設定ファイルを作成
 
 セキュリティ上、実際のDB接続情報を含む `src/db.properties` はGitHubにアップロードしていません。
 
@@ -296,7 +308,7 @@ password=1234
 
 ---
 
-### 8. 実行クラス
+### 7. 実行クラス
 
 以下のクラスを実行します。
 
@@ -351,30 +363,52 @@ target/
 
 開発初期は `GameWindow.java` と `RankingPanel.java` にUI生成処理とロジックが集中していました。機能追加のたびにファイルが肥大化し、役割の把握や修正箇所の特定が難しくなったため、責務ごとにクラスを分割しました。
 
-| 分離クラス                        | 役割                      |
-| ---------------------------- | ----------------------- |
-| `GameWindowLayout.java`      | ゲーム画面の座標・サイズ定数を管理       |
-| `GameImagePanel.java`        | 画像ベースのパネル描画             |
+| 分離クラス | 役割 |
+|---|---|
+| `GameWindowLayout.java` | ゲーム画面の座標・サイズ定数を管理 |
+| `GameImagePanel.java` | 画像ベースのパネル描画 |
 | `GameIconButtonFactory.java` | ホーム / リセット / ミュートボタンの生成 |
-| `GameTextPainter.java`       | アウトライン付きテキスト描画          |
-| `InGameScoreBox.java`        | プレイヤーのスコア表示UI           |
-| `MatchedScorePanel.java`     | マッチしたカードの表示パネル          |
-| `RankingLayout.java`         | ランキング画面の座標・サイズ定数を管理     |
-| `RankingRowPanel.java`       | ランキング行の描画と展開 / 折りたたみUI  |
-| `RankingScrollBarUI.java`    | カスタムスクロールバーUI           |
+| `GameTextPainter.java` | アウトライン付きテキスト描画 |
+| `InGameScoreBox.java` | プレイヤーのスコア表示UI |
+| `MatchedScorePanel.java` | マッチしたカードの表示パネル |
+| `RankingLayout.java` | ランキング画面の座標・サイズ定数を管理 |
+| `RankingRowPanel.java` | ランキング行の描画と展開 / 折りたたみUI |
+| `RankingScrollBarUI.java` | カスタムスクロールバーUI |
 
 ### 整理した内容
 
-* 未使用クラスの削除
-* `.class` ファイルの削除
-* DBパスワードの除外と `db.properties.example` の追加
-* 日本語コメントの整理
-* 重要なメソッドへの韓国語 / 英語コメント追加
-* `.gitignore` の整理
+- 未使用クラスの削除
+- `.class` ファイルの削除
+- DBパスワードの除外と `db.properties.example` の追加
+- 日本語コメントの整理
+- 重要なメソッドへの韓国語 / 英語コメント追加
+- `.gitignore` の整理
 
 ---
 
 ## 🧯 トラブルシューティング
+
+### 新規登録に失敗する場合
+
+新規登録時に「登録に失敗しました。」と表示される場合は、DBまたはテーブルの設定が完了していない可能性があります。
+
+以下を確認してください。
+
+1. MySQLサーバーが起動しているか
+2. `card_game_db` データベースが存在するか
+3. `users` テーブルが作成されているか
+4. `src/db.properties` の `url`, `username`, `password` が正しいか
+
+MySQLで以下のSQLを実行すると、テーブルの存在を確認できます。
+
+```sql
+USE card_game_db;
+SHOW TABLES;
+```
+
+`users` と `game_records` が表示されない場合は、セットアップ手順のSQLを再度実行してください。
+
+---
 
 ### `properties에서 'url' 설정을 찾을 수 없습니다.` が表示される場合
 
@@ -455,13 +489,13 @@ GitHubに公開する過程では、DBパスワードを含む設定ファイル
 
 ## 🔧 今後の改善点
 
-* MavenまたはGradleを用いたプロジェクト構成への移行
-* DBテーブル作成SQLの別ファイル化
-* 実行可能JARとしての配布形式の整備
-* サウンド音量調整機能の追加
-* カード反転アニメーションの改善
-* ランキングのフィルター / ソート機能追加
-* テストコードの追加
+- MavenまたはGradleを用いたプロジェクト構成への移行
+- `schema.sql` を用意し、DBテーブル作成手順を自動化
+- 実行可能JARとしての配布形式の整備
+- サウンド音量調整機能の追加
+- カード反転アニメーションの改善
+- ランキングのフィルター / ソート機能追加
+- テストコードの追加
 
 ---
 
@@ -475,10 +509,10 @@ GitHubに公開する過程では、DBパスワードを含む設定ファイル
 
 BGMにはPeriTuneの無料BGMを使用しました。
 
-| 使用箇所           | ファイル名           | 曲名                                                                   | 出典       |
-| -------------- | --------------- | -------------------------------------------------------------------- | -------- |
+| 使用箇所 | ファイル名 | 曲名 | 出典 |
+|---|---|---|---|
 | メイン画面 / メニュー画面 | `Mainmusic.wav` | [Portside Café](https://peritune.com/blog/2026/03/13/portside-cafe/) | PeriTune |
-| ゲーム画面          | `Casino.wav`    | [Resort5](https://peritune.com/blog/2021/08/09/resort5/)             | PeriTune |
+| ゲーム画面 | `Casino.wav` | [Resort5](https://peritune.com/blog/2021/08/09/resort5/) | PeriTune |
 
 ### 効果音
 
@@ -486,5 +520,5 @@ BGMにはPeriTuneの無料BGMを使用しました。
 
 ### 注意事項
 
-本プロジェクトのリソースはポートフォリオ目的で使用しています。
+本プロジェクトのリソースはポートフォリオ目的で使用しています。  
 外部リソースは各提供元のライセンス条件に従い、音楽ファイル単体の再配布・販売は行いません。
